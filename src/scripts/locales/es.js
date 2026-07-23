@@ -40,6 +40,7 @@ export const es = {
   about: {
     tagline: 'Música y audiolibros, en tu navegador',
     lead: 'FolderPlay reproduce tu música y tus audiolibros directamente en el navegador. No hay servidor y nada sale de tu equipo: eliges una carpeta y suena.',
+    compatNote: 'Tu navegador reproduce todo, pero para editar etiquetas, borrar archivos o recordar tu carpeta al volver necesitas un navegador Chromium (Chrome o Edge).',
     code: 'Ver el código en GitHub',
     contact: 'Enviar una sugerencia',
     mailSubject: 'Sugerencia para FolderPlay',

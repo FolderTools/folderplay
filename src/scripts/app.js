@@ -40,6 +40,11 @@ import {
 
 let currentUrl = null;
 let seeking = false;
+// Salto pendiente al cargar la pista (reanudar posición, precargar sesión,
+// restaurar tras editar). Lo consume el handler de `loadedmetadata`, uno solo,
+// en vez de un listener transitorio por pista: si el archivo falla nunca dispara
+// y ese listener quedaría colgado, aplicando su salto a la pista siguiente.
+let pendingSeek = null;   // { at: segundos, toast: boolean } | null
 let playFailStreak = 0;   // pistas seguidas que no se pudieron reproducir
 let lastCrashToast = 0;   // último aviso de la red de seguridad (para no repetir)
 const MAX_PLAY_FAILS = 3; // a partir de aquí no es un archivo suelto: se perdió el acceso
@@ -304,13 +309,9 @@ function playCurrent() {
   const saved = savedPositionOf(track);
   if (saved) {
     const rewind = Number(getPref('rewindOnResume', '5')) || 0;
-    const resumeAt = Math.max(0, saved - rewind);
-    audio.addEventListener('loadedmetadata', () => {
-      try {
-        audio.currentTime = resumeAt;
-        showToast(t('player.resumedAt', { time: fmtTime(resumeAt) }), 2500);
-      } catch { /* el navegador no pudo saltar */ }
-    }, { once: true });
+    pendingSeek = { at: Math.max(0, saved - rewind), toast: true };
+  } else {
+    pendingSeek = null; // sin posición guardada: empieza del principio
   }
   audio.play().catch(() => {});
   updateMediaSession(track);
@@ -491,13 +492,7 @@ function prepareTrack(id, position) {
   if (currentUrl) URL.revokeObjectURL(currentUrl);
   currentUrl = URL.createObjectURL(track.file);
   audio.src = currentUrl;
-  if (position > 0) {
-    audio.addEventListener('loadedmetadata', () => {
-      try {
-        audio.currentTime = position;
-      } catch { /* el navegador no pudo saltar */ }
-    }, { once: true });
-  }
+  pendingSeek = position > 0 ? { at: position, toast: false } : null;
   updateMediaSession(track);
   applyAccentFor(track);
   renderPlayerBar();
@@ -520,6 +515,7 @@ function stopPlayback() {
   audio.removeAttribute('src');
   if (currentUrl) URL.revokeObjectURL(currentUrl);
   currentUrl = null;
+  pendingSeek = null;
   state.currentId = null;
   state.queue = [];
   state.qPos = -1;
@@ -546,13 +542,7 @@ function releaseCurrentFile() {
 function restoreCurrentFile(file, snapshot) {
   currentUrl = URL.createObjectURL(file);
   audio.src = currentUrl;
-  if (snapshot.pos > 0) {
-    audio.addEventListener('loadedmetadata', () => {
-      try {
-        audio.currentTime = snapshot.pos;
-      } catch { /* el navegador no pudo saltar */ }
-    }, { once: true });
-  }
+  pendingSeek = snapshot.pos > 0 ? { at: snapshot.pos, toast: false } : null;
   if (snapshot.playing) audio.play().catch(() => {});
 }
 
@@ -1385,6 +1375,11 @@ const CONTACT_EMAIL = 'hello@folderplay.com';
 // se puede cambiar sin que nadie lo note.
 function renderAbout(container) {
   const mail = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t('about.mailSubject'))}`;
+  // Sin File System Access (Firefox/Safari) se reproduce todo, pero no se puede
+  // editar etiquetas, borrar archivos ni recordar la carpeta al volver. Se dice
+  // aquí, y solo a quien le afecta: en Chromium no aparece.
+  const compat = window.showDirectoryPicker ? '' :
+    `<p class="about-compat">${esc(t('about.compatNote'))}</p>`;
   container.innerHTML = `
     <section class="about">
       <div class="about-head">
@@ -1395,6 +1390,7 @@ function renderAbout(container) {
         </div>
       </div>
       <p class="about-lead">${esc(t('about.lead'))}</p>
+      ${compat}
       <div class="about-links">
         <a class="about-link" href="${REPO_URL}" target="_blank" rel="noopener">
           ${ICON('github')}<span>${esc(t('about.code'))}</span>
@@ -2747,6 +2743,16 @@ function bindEvents() {
     const track = state.currentId != null ? trackById(state.currentId) : null;
     if (track && isFinite(audio.duration)) track.duration = audio.duration;
     $('#time-total').textContent = fmtTime(audio.duration);
+    // Salto pendiente (reanudar, precargar, restaurar). Se consume aquí, una vez
+    // por carga, y se limpia: nunca se aplica a una pista que no le tocaba.
+    if (pendingSeek) {
+      const { at, toast } = pendingSeek;
+      pendingSeek = null;
+      try {
+        audio.currentTime = at;
+        if (toast) showToast(t('player.resumedAt', { time: fmtTime(at) }), 2500);
+      } catch { /* el navegador no pudo saltar */ }
+    }
   });
 
   document.addEventListener('keydown', (e) => {
