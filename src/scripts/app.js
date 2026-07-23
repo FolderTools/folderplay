@@ -1362,7 +1362,7 @@ let settingsTab = 'settings';
 
 const REPO_URL = 'https://github.com/FolderTools/folderplay';
 const ORG_URL = 'https://github.com/FolderTools';
-const CONTACT_EMAIL = 'hola@folderplay.com';
+const CONTACT_EMAIL = 'hello@folderplay.com';
 
 // "Acerca de": qué es, quién lo hace, dónde está el código y cómo sugerir. El
 // correo es para quien no tiene cuenta de GitHub; la dirección es un mailto que
