@@ -18,17 +18,21 @@ let canvas = null;
 let ctx2d = null;
 let raf = 0;
 let color = '#b18cff';
-// Tamaño del canvas en CSS, medido por ResizeObserver. NUNCA se lee
-// clientWidth dentro del bucle de dibujo: forzaría un relayout síncrono en
-// cada frame y, con miles de filas en `content-visibility`, eso hunde los fps
-// a ~10. La medida solo cambia al redimensionar, así que ahí es donde se toma.
+// Tamaño del canvas en CSS, medido por ResizeObserver. NUNCA se lee clientWidth
+// dentro del bucle de dibujo: forzaría un relayout síncrono en cada frame. La
+// medida solo cambia al redimensionar, así que ahí es donde se toma.
 let cssW = 0;
 let resizeObs = null;
+
+// Se consulta una sola vez (no en cada frame): crear un MediaQueryList por frame
+// es caro sin motivo. El modo activo se fija al arrancar y el bucle lo reutiliza.
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+let activeMode = 'off';
 
 export function vizMode() {
   const mode = getPref('viz', 'off');
   if (mode === 'off' || !MODES[mode]) return 'off';
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'off';
+  if (reducedMotion.matches) return 'off';
   return mode;
 }
 
@@ -38,7 +42,8 @@ export function refreshVizColor() {
 }
 
 export function startViz(audio, el) {
-  if (vizMode() === 'off') return;
+  activeMode = vizMode();
+  if (activeMode === 'off') return;
   canvas = el;
   if (!audioCtx) {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -192,13 +197,9 @@ const MODES = {
 
 function draw() {
   raf = requestAnimationFrame(draw);
-  // cssW == 0 mientras el canvas no tenga tamaño (oculto). No se lee layout.
+  // cssW == 0 mientras el canvas no tenga tamaño (oculto). No se lee layout ni
+  // prefs por frame: el modo se fijó al arrancar (cambiarlo reinicia el viz).
   if (document.hidden || !analyser || !cssW) return;
-  const mode = vizMode();
-  if (mode === 'off') {
-    stopViz();
-    return;
-  }
   ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-  MODES[mode](canvas.width, canvas.height);
+  MODES[activeMode](canvas.width, canvas.height);
 }
