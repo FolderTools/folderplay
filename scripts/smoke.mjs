@@ -79,7 +79,22 @@ Object.defineProperty(globalThis, 'navigator', { value: window.navigator, config
 Object.defineProperty(globalThis, 'location', { value: window.location, configurable: true });
 globalThis.matchMedia = window.matchMedia;
 globalThis.indexedDB = stub('indexedDB');
-globalThis.Audio = function () { return stub('Audio'); };
+// El <audio> captura sus listeners para poder ejercitarlos después del arranque
+// (ver más abajo). Todo lo demás delega en el stub.
+const audioListeners = {};
+globalThis.Audio = function () {
+  const base = stub('Audio');
+  return new Proxy(base, {
+    get(target, prop) {
+      if (prop === 'addEventListener') return (type, fn) => { (audioListeners[type] ||= []).push(fn); };
+      if (prop === 'removeEventListener') return (type, fn) => {
+        audioListeners[type] = (audioListeners[type] || []).filter((f) => f !== fn);
+      };
+      return target[prop];
+    },
+    set: () => true,
+  });
+};
 globalThis.Image = function () { return stub('Image'); };
 globalThis.IntersectionObserver = function () { return stub('IntersectionObserver'); };
 globalThis.requestAnimationFrame = () => 0;
@@ -114,5 +129,28 @@ if (late) {
   console.log((late.stack || String(late)).split('\n').slice(0, 5).join('\n'));
   process.exit(1);
 }
-console.log('OK: arranca sin errores con el DOM de mentira');
+
+// Los handlers que gobiernan el paso de una pista a otra son de lo más fácil de
+// romper al refactorizar (una variable que se queda sin declarar, una guarda que
+// se cae) y el build no lo ve. Aquí se comprueba que están cableados y que se
+// ejecutan sin lanzar con el reproductor parado (sin pista en curso): así al
+// menos las guardas de estado vacío quedan cubiertas, no solo el arranque.
+const requiredHandlers = ['error', 'ended', 'loadedmetadata'];
+const missing = requiredHandlers.filter((type) => !(audioListeners[type]?.length));
+if (missing.length) {
+  console.log(`FALLA: el <audio> no tiene handler para: ${missing.join(', ')}`);
+  console.log('(¿se movió o se quitó el cableado de bindEvents?)');
+  process.exit(1);
+}
+try {
+  for (const type of requiredHandlers) {
+    for (const fn of audioListeners[type]) fn({});
+  }
+} catch (err) {
+  console.log('FALLA al ejercitar los handlers de audio parados:');
+  console.log((err.stack || String(err)).split('\n').slice(0, 6).join('\n'));
+  process.exit(1);
+}
+
+console.log('OK: arranca y los handlers de reproducción corren sin errores');
 process.exit(0);

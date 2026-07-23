@@ -39,6 +39,7 @@ export const en = {
   about: {
     tagline: 'Music and audiobooks, in your browser',
     lead: 'FolderPlay plays your music and audiobooks right in the browser. There is no server and nothing leaves your device: you pick a folder and it plays.',
+    compatNote: 'Your browser plays everything, but editing tags, deleting files or remembering your folder when you return needs a Chromium browser (Chrome or Edge).',
     code: 'View the code on GitHub',
     contact: 'Send a suggestion',
     mailSubject: 'FolderPlay suggestion',

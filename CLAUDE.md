@@ -43,7 +43,11 @@ son lo único que separa un error de un despliegue roto. Las dos se ejecutan en
 que sirve Cloudflare— sobre un DOM de mentira hecho con un `Proxy` que responde
 a cualquier cosa. No prueba la interfaz (eso pide navegador), pero sí que todos
 los módulos cargan, que no hay ciclos que dejen valores a medias y que `init()`
-llega al final sin lanzar.
+llega al final sin lanzar. Además captura los listeners del `<audio>` y, tras el
+arranque, dispara los de progresión de reproducción (`error`, `ended`,
+`loadedmetadata`) con el reproductor parado: comprueba que siguen cableados y que
+sus guardas de estado vacío no lanzan. Un refactor que deje una variable sin
+declarar o quite una guarda muere aquí, no en el navegador.
 
 ## Arquitectura
 
