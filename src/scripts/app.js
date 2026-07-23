@@ -856,6 +856,8 @@ function clearSearch() {
 
 function openTrackMenu(e, id) {
   const track = trackById(id);
+  const anchor = e.currentTarget;       // botón ⋯ de la fila
+  const mx = e.clientX, my = e.clientY; // posición, para reabrir el submenú aquí mismo
   const isFav = state.favs.has(track.path);
   const items = [
     // El corazón está oculto en la fila en móvil; aquí el favorito llega a
@@ -873,22 +875,19 @@ function openTrackMenu(e, id) {
     items.push({ icon: 'mic', label: t('menu.viewArtist'), fn: () => goToArtist(track.artist) });
   }
 
-  for (const pl of getPlaylists()) {
+  // Añadir a lista: con listas ya creadas, un submenú (que hace scroll solo si
+  // son muchas) en vez de una entrada por lista, que inflaba el menú entero. Sin
+  // ninguna lista todavía, el atajo directo a crear una.
+  if (getPlaylists().length) {
     items.push({
       icon: 'note',
-      label: t('menu.addTo', { name: pl.name }),
-      fn: () => addToPlaylistWithToast(pl, track),
+      label: t('menu.addToList'),
+      submenu: true,
+      fn: () => openTrackPlaylistMenu(track, mx, my, anchor),
     });
+  } else {
+    items.push({ icon: 'plus', label: t('menu.addNewList'), fn: () => promptNewListWith(track) });
   }
-  items.push({
-    icon: 'plus',
-    label: t('menu.addNewList'),
-    fn: () => promptName(t('name.new'), '', (name) => {
-      const pl = createPlaylist(name);
-      addToPlaylistWithToast(pl, track);
-      render();
-    }),
-  });
   items.push({ icon: 'edit', label: t('menu.editTags'), fn: () => openEditor(id) });
 
   // Marcar la carpeta como libro (o dejar de serlo): lo que decidas manda
@@ -928,7 +927,27 @@ function openTrackMenu(e, id) {
   if (canDeleteTrack(track)) {
     items.push({ icon: 'trash', label: t('menu.deleteDisk'), danger: true, fn: () => deleteTrack(id) });
   }
-  showMenu(e.clientX, e.clientY, items, e.currentTarget);
+  showMenu(mx, my, items, anchor);
+}
+
+// Submenú de "Añadir a lista": las playlists (con scroll si son muchas) más la
+// opción de crear una. Se abre en la misma posición que el menú de la canción.
+function openTrackPlaylistMenu(track, x, y, anchor) {
+  const items = getPlaylists().map((pl) => ({
+    icon: 'note',
+    label: pl.name,
+    fn: () => addToPlaylistWithToast(pl, track),
+  }));
+  items.push({ icon: 'plus', label: t('menu.addNewList'), fn: () => promptNewListWith(track) });
+  showMenu(x, y, items, anchor);
+}
+
+function promptNewListWith(track) {
+  promptName(t('name.new'), '', (name) => {
+    const pl = createPlaylist(name);
+    addToPlaylistWithToast(pl, track);
+    render();
+  });
 }
 
 // Menú de la cabecera móvil: solo acciones de carpeta. Ajustes ya está en la
@@ -1410,11 +1429,14 @@ function renderAbout(container) {
 }
 
 function normalizeView() {
-  const inBook = state.detail?.type === 'book';
-  if (!inBook && state.view !== 'books') return; // no hay nada que normalizar
-  const books = bookList();
-  if (inBook && !books.some((book) => book.dir === state.detail.dir)) state.detail = null;
-  if (!state.detail && state.view === 'books' && !books.length) state.view = 'songs';
+  // Un detalle de libro que ya no existe (se desmarcó estando dentro) se limpia:
+  // su vista dereferencia el libro y se quedaría en blanco. La LISTA de Libros
+  // vacía, en cambio, ya no rebota a Canciones: Libros se muestra siempre y su
+  // vista tiene un estado vacío que explica qué son.
+  if (state.detail?.type === 'book'
+      && !bookList().some((book) => book.dir === state.detail.dir)) {
+    state.detail = null;
+  }
 }
 
 function render() {
@@ -1429,10 +1451,11 @@ function render() {
 
 function renderNav() {
   document.body.dataset.view = state.view; // lo usa el CSS (ancho de Ajustes)
-  // La sección Libros solo existe si hay libros: quien solo tiene música no
-  // ve nada nuevo.
-  const showBooks = hasBooks();
-  $$('[data-view="books"]').forEach((btn) => { btn.hidden = !showBooks; });
+  // Libros se muestra siempre, como el resto de secciones: aunque no haya
+  // audiolibros, la vista tiene un estado vacío que explica qué son y cómo
+  // aparecen. Antes se ocultaba sin libros, pero era la única sección que
+  // desaparecía y resultaba inconsistente (Favoritos y Listas salen vacías).
+  $$('[data-view="books"]').forEach((btn) => { btn.hidden = false; });
   $$('.nav-btn, .tab-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.view === state.view && !state.detail);
   });

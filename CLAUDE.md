@@ -134,6 +134,14 @@ declarar o quite una guarda muere aquí, no en el navegador.
   forma de distinguirlo. Igual con el botón que abre el menú: se guarda en
   `menuAnchor` en vez de mantener una lista de selectores (cada botón nuevo
   llegaba roto).
+- **Un submenú es un ítem cuyo `fn` vuelve a llamar a `showMenu()`** en la misma
+  posición: `hideMenu()` corre antes del `fn` (en `renderMenu`), así que el menú
+  se reemplaza limpio. El ítem lleva `submenu: true` para pintar el chevron `▸`.
+  El menú de cada canción usa esto para "Añadir a lista": con listas creadas abre
+  un submenú (con scroll si son muchas, por `max-height` + `overflow` de
+  `.ctx-menu`) en vez de una entrada por lista, que lo inflaba entero. Se capturan
+  `clientX/Y` y el ancla al abrir el menú, porque en el `fn` diferido
+  `e.currentTarget` ya es `null`.
 
 - **Flexbox en columna**: `.content` necesita `min-height: 0`. En móvil `.layout`
   es columna y, sin eso, la lista no hace scroll y se mete bajo el reproductor.
@@ -173,14 +181,13 @@ declarar o quite una guarda muere aquí, no en el navegador.
 - Voltear un icono simétrico no comunica nada: `#i-sort` (flecha arriba y
   flecha abajo) con `scaleY(-1)` se veía idéntico y no se distinguía el orden
   ascendente del descendente. De ahí `#i-arrow-up` y la palabra al lado.
-- **No quedarse en la vista Libros sin libros.** La pestaña Libros se oculta si
-  `hasBooks()` es falso, así que estar en `state.view === 'books'` (o en un
-  `#book/<dir>` que ya no existe) con cero libros deja una vista que la interfaz
-  no ofrece y se ve **en blanco, sin error en consola**. Pasa al desmarcar el
-  último libro estando dentro, y al reabrir con el hash `#books` (antes del
-  escaneo las duraciones son `null`, así que los libros solo detectados aún no
-  cuentan). `normalizeView()`, al principio de `render()`, cae a Canciones si el
-  libro del detalle ya no existe o si la vista Libros se quedó sin libros.
+- **Un detalle de libro que ya no existe se ve en blanco.** Estar en un
+  `#book/<dir>` que se desmarcó (o ya no está) hace que la vista de detalle
+  dereferencie un libro inexistente y quede **en blanco, sin error en consola**.
+  `normalizeView()`, al principio de `render()`, limpia ese detalle (`state.detail
+  = null`) y cae a la lista de Libros. La **lista** de Libros vacía, en cambio, ya
+  **no** rebota a Canciones: Libros se muestra siempre (como el resto de secciones)
+  y su vista tiene un estado vacío (`books.empty`) que explica qué son.
 - **Un fallo al reproducir no puede ser mudo ni entrar en bucle.** El handler de
   `audio.error` avisa (`toast.playFailed`) y salta a otra pista, pero **nunca por
   `next()`**: con `repeat 'one'` reintentaría la rota para siempre. Cuenta los
@@ -293,8 +300,10 @@ declarar o quite una guarda muere aquí, no en el navegador.
 - **Un libro es una carpeta**. `bookList()` la detecta sola (algún .m4b o el
   60% de sus pistas de más de 15 min) y el usuario puede marcarla o desmarcarla
   (`books` en prefs, con listas `yes`/`no`: lo marcado manda sobre lo
-  detectado). La sección Libros y los ajustes de libros solo aparecen si hay
-  alguno, así que quien solo tiene música no ve nada nuevo.
+  detectado). La pestaña Libros **se muestra siempre** (con su estado vacío si no
+  hay ninguno), por consistencia con Favoritos y Listas; los **ajustes** de
+  libros sí siguen ocultos sin libros (`visible: hasBooks`), porque no tendrían
+  a qué aplicarse.
 - Las marcas se guardan con `libraryKey(dir)` = carpeta abierta + ruta. Con la
   ruta sola, la raíz es `""` en todas las bibliotecas y una marca se aplicaba a
   la siguiente carpeta que abrieras.

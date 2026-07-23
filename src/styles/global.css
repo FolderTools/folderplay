@@ -2595,6 +2595,15 @@ body.playing .np-eq {
   flex-shrink: 0;
 }
 
+/* Chevron de "abre un submenú": a la derecha y apuntando ▸ (el de bajar, girado) */
+.ctx-menu button .ctx-sub {
+  margin-left: auto;
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+  transform: rotate(-90deg);
+}
+
 .ctx-menu .danger:hover {
   color: var(--danger);
 }
