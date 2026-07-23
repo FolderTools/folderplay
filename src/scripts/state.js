@@ -8,6 +8,7 @@ import { getPref, getJson } from './prefs.js';
 import { t } from './i18n.js';
 
 export const APP_NAME = 'FolderPlay';
+export const APP_VERSION = '1.0';
 
 // Subir cuando cambie cómo se leen las etiquetas: invalida la caché para que
 // las canciones ya analizadas se vuelvan a leer con las reglas nuevas.

@@ -440,6 +440,32 @@ body.has-library #remove-folder {
   color: var(--text-faint);
 }
 
+/* Tuerca de Ajustes: empujada a la derecha, rellena la esquina que estaba vacía */
+.topbar-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.topbar-btn:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+  background: var(--bg-hover);
+}
+
+.topbar-btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
 /* ---------- Bienvenida ---------- */
 
 .welcome {
@@ -2822,13 +2848,130 @@ body.fav-playing #seek-range::-moz-range-thumb {
   flex-direction: column;
   gap: 26px;
   width: min(760px, 100%);
-  margin: 10px auto 0;
+  margin: 4px auto 0;
 }
 
 body[data-view='settings'] .view-title {
   width: min(760px, 100%);
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Pestañas de la vista Ajustes: Ajustes | Acerca de, en la misma página */
+.set-tabs {
+  display: flex;
+  gap: 4px;
+  width: min(760px, 100%);
+  margin: 6px auto 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.set-tab {
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-faint);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.set-tab:hover {
+  color: var(--text-dim);
+}
+
+.set-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent-2);
+}
+
+/* ---------- Acerca de ---------- */
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 520px;
+}
+
+.about-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.about-logo {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+}
+
+.about-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.about-name b {
+  color: var(--accent-2);
+  font-weight: inherit;
+}
+
+.about-tag {
+  color: var(--text-faint);
+  font-size: 13.5px;
+}
+
+.about-lead {
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.about-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 13.5px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.about-link:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+  background: var(--bg-hover);
+}
+
+.about-link .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.about-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.about-meta a {
+  color: var(--text-dim);
+}
+
+.about-meta a:hover {
+  color: var(--accent-2);
 }
 
 .set-section h3 {

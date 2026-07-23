@@ -22,7 +22,7 @@ import { parseMetadata } from './metadata.js';
 import { writeId3 } from './id3-writer.js';
 import {
   state, audio, trackById, dirOf, groupBy, dispArtist, dispAlbum,
-  APP_NAME, folderArtEnabled, UNKNOWN_ARTIST, UNKNOWN_ALBUM,
+  APP_NAME, APP_VERSION, folderArtEnabled, UNKNOWN_ARTIST, UNKNOWN_ALBUM,
 } from './state.js';
 import {
   isLongTrack, positionOf, isFinished, rememberPosition, markFinished,
@@ -930,7 +930,7 @@ function openHeadMenu(e) {
   const items = [
     { icon: 'folder', label: t('sidebar.changeFolder'), fn: pickFolder },
     { icon: 'trash', label: t('sidebar.removeFolder'), danger: true, fn: removeFolder },
-    { icon: 'settings', label: t('settings.open'), fn: () => goToView('settings') },
+    { icon: 'settings', label: t('settings.open'), fn: () => { settingsTab = 'settings'; goToView('settings'); } },
   ];
   showMenu(e.clientX - 180, e.clientY + 10, items, e.currentTarget);
 }
@@ -1356,6 +1356,47 @@ async function saveBatch() {
 // esto, desmarcar el último libro —o reabrir con el hash #books, antes de que el
 // escaneo detecte ninguno— deja la app en una vista que la interfaz ya no
 // ofrece: se veía una pantalla en blanco. Se cae a Canciones.
+// Pestaña activa de la vista Ajustes: 'settings' | 'about'. Al abrir Ajustes se
+// vuelve siempre a 'settings' (se pone en el manejador del botón).
+let settingsTab = 'settings';
+
+const REPO_URL = 'https://github.com/FolderTools/folderplay';
+const ORG_URL = 'https://github.com/FolderTools';
+const CONTACT_EMAIL = 'hola@folderplay.com';
+
+// "Acerca de": qué es, quién lo hace, dónde está el código y cómo sugerir. El
+// correo es para quien no tiene cuenta de GitHub; la dirección es un mailto que
+// se puede cambiar sin que nadie lo note.
+function renderAbout(container) {
+  const mail = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t('about.mailSubject'))}`;
+  container.innerHTML = `
+    <section class="about">
+      <div class="about-head">
+        <svg class="icon about-logo"><use href="#i-logo"/></svg>
+        <div>
+          <div class="about-name">Folder<b>Play</b></div>
+          <div class="about-tag">${esc(t('about.tagline'))}</div>
+        </div>
+      </div>
+      <p class="about-lead">${esc(t('about.lead'))}</p>
+      <div class="about-links">
+        <a class="about-link" href="${REPO_URL}" target="_blank" rel="noopener">
+          ${ICON('github')}<span>${esc(t('about.code'))}</span>
+        </a>
+        <a class="about-link" href="${esc(mail)}">
+          ${ICON('mail')}<span>${esc(t('about.contact'))}</span>
+        </a>
+      </div>
+      <div class="about-meta">
+        <a href="${ORG_URL}" target="_blank" rel="noopener">${esc(t('about.by'))}</a>
+        <span aria-hidden="true">·</span>
+        <span>v${esc(APP_VERSION)}</span>
+        <span aria-hidden="true">·</span>
+        <a href="${REPO_URL}/blob/prod/LICENSE" target="_blank" rel="noopener">MIT</a>
+      </div>
+    </section>`;
+}
+
 function normalizeView() {
   const inBook = state.detail?.type === 'book';
   if (!inBook && state.view !== 'books') return; // no hay nada que normalizar
@@ -1658,12 +1699,25 @@ function renderView() {
   }
 
   // Ajustes: es una vista, no un modal, para que el reproductor siga visible
-  // mientras se prueban los diseños.
+  // mientras se prueban los diseños. Dos pestañas: los ajustes y "Acerca de"
+  // (autor, código, contacto), para no llenar de botones la barra lateral.
   if (!state.detail && state.view === 'settings') {
     main.innerHTML = `
       <h1 class="view-title">${esc(t('settings.title'))}</h1>
+      <div class="set-tabs" role="tablist">
+        <button class="set-tab ${settingsTab === 'settings' ? 'active' : ''}" data-tab="settings">${esc(t('settings.tabSettings'))}</button>
+        <button class="set-tab ${settingsTab === 'about' ? 'active' : ''}" data-tab="about">${esc(t('settings.tabAbout'))}</button>
+      </div>
       <div class="settings-view" id="settings-body"></div>`;
-    renderSettingsInto($('#settings-body'));
+    main.querySelectorAll('.set-tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (settingsTab === btn.dataset.tab) return;
+        settingsTab = btn.dataset.tab;
+        renderView(); // re-pinta solo la vista, cambia de pestaña sin recargar
+      });
+    });
+    if (settingsTab === 'about') renderAbout($('#settings-body'));
+    else renderSettingsInto($('#settings-body'));
     return;
   }
 
@@ -2355,7 +2409,7 @@ function bindEvents() {
     if (menuIsOpen()) hideMenu();
     else openHeadMenu(e);
   });
-  $('#settings-open').addEventListener('click', () => goToView('settings'));
+  $('#open-settings').addEventListener('click', () => { settingsTab = 'settings'; goToView('settings'); });
   $('#welcome-lang').addEventListener('click', (e) => toggleMenuAt(e.currentTarget, langItems(), { above: false }));
   $('#goto-fab').addEventListener('click', () => scrollCurrentIntoView(true));
 
