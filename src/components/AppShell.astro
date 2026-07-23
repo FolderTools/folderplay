@@ -122,9 +122,15 @@ const heroPick = isBooks ? 'welcome.pickBooks' : 'welcome.pick';
             <svg class="icon"><use href="#i-folder"/></svg>
             <span id="folder-name"></span>
           </div>
-          <button class="btn-ghost" id="change-folder" data-i18n="sidebar.changeFolder">Cambiar carpeta</button>
-          <button class="btn-ghost" id="remove-folder" data-i18n="sidebar.removeFolder">Quitar carpeta</button>
-          <button class="btn-ghost lang-btn" id="settings-open" data-i18n-title="settings.open">
+          <button class="btn-ghost foot-btn" id="change-folder" data-i18n-title="sidebar.changeFolder">
+            <svg class="icon"><use href="#i-folder"/></svg>
+            <span data-i18n="sidebar.changeFolder">Cambiar carpeta</span>
+          </button>
+          <button class="btn-ghost foot-btn" id="remove-folder" data-i18n-title="sidebar.removeFolder">
+            <svg class="icon"><use href="#i-x"/></svg>
+            <span data-i18n="sidebar.removeFolder">Quitar carpeta</span>
+          </button>
+          <button class="btn-ghost foot-btn" id="settings-open" data-i18n-title="settings.open">
             <svg class="icon"><use href="#i-settings"/></svg>
             <span data-i18n="settings.open">Ajustes</span>
           </button>

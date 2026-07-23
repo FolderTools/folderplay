@@ -237,14 +237,21 @@ llega al final sin lanzar.
   propios. Es la misma aplicación: solo cambia la puerta de entrada. AppShell
   recibe `variant` y elige las claves del titular de la bienvenida; el texto de
   reserva va en español, como en el resto, e i18n lo traduce en caliente.
-- **El coste con muchas canciones no es el HTML, es maquetar y pintar.** Con
-  1600 pistas, reconstruir la lista entera en cada acción (marcar un favorito,
-  seleccionar uno) daba tirones. Dos remedios: (1) los cambios baratos son
-  quirúrgicos —`paintFav` y `syncSelectionUI` tocan las filas ya pintadas en vez
-  de recrearlas, como ya hacían `highlightPlaying`/`updateCurrentRowProgress`—;
-  (2) `.track-row` lleva `content-visibility: auto` para que el navegador se
-  salte las filas fuera de pantalla. Quitar el favorito en la **vista de
-  Favoritos** sí repinta (la fila desaparece).
+- **Los cambios baratos no reconstruyen la lista.** Con 1600 pistas, rehacer
+  todo el `innerHTML` en cada acción (marcar un favorito, seleccionar uno) daba
+  tirones. `paintFav` y `syncSelectionUI` tocan las filas ya pintadas, como
+  `highlightPlaying`/`updateCurrentRowProgress`. Quitar el favorito en la
+  **vista de Favoritos** sí repinta (la fila desaparece).
+- **`content-visibility: auto` en las filas se probó y se quitó.** Abarataba la
+  primera pintura, pero como el canvas del reproductor dibuja por el hilo
+  principal en cada frame, obligaba a re-evaluar la relevancia de las miles de
+  filas contenidas en cada frame → el efecto caía a ~10 fps solo en Canciones.
+- **El canvas del visualizador va en su propia capa** (`.p-viz` con
+  `translateZ(0)` + `will-change`). Sin eso, su repintado por frame recomponía
+  la capa del documento (con las miles de filas) y volvía a hundir los fps con
+  bibliotecas grandes. En su capa, cada frame solo re-sube su textura. Además
+  `viz.js` no lee prefs ni `matchMedia` por frame: fija el modo al arrancar
+  (cambiarlo reinicia el viz).
 - **Reordenar la cola**: arrastrar y soltar nativo (sin librerías), solo en las
   pistas que vienen (la que suena es el punto fijo). `moveInQueue(from, to)`
   usa offsets visibles; `to` es la posición ANTES de la cual cae, y la mitad

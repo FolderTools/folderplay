@@ -373,6 +373,18 @@ body.has-library .folder-chip {
   display: flex;
 }
 
+/* Cambiar / Quitar carpeta / Ajustes: un solo formato (icono + texto a la
+   izquierda), para que la sección no desentone teniendo unos icono y otros no. */
+.foot-btn {
+  justify-content: flex-start;
+  padding-left: 14px;
+}
+
+.foot-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
 body.has-library #change-folder,
 body.has-library #remove-folder {
   display: inline-flex;
@@ -1553,7 +1565,12 @@ body.has-track .player::after {
   position: absolute;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
+  /* translateZ(0) + will-change lo suben a su propia capa de composición: el
+     canvas se repinta en cada frame, y sin aislarlo eso obligaba al navegador a
+     recomponer la capa del documento —donde están las miles de filas—, hundiendo
+     los fps solo en Canciones. En su capa, cada frame solo re-sube su textura. */
+  transform: translateX(-50%) translateZ(0);
+  will-change: transform;
   /* La columna central mide 1.4/3.4 del ancho útil ≈ 38%, y la barra de
      progreso no pasa de 560px. El canvas necesita alto explícito: como
      elemento reemplazado, con height:auto se queda en sus 150px intrínsecos
