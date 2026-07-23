@@ -1739,9 +1739,11 @@ body.playing .art-eq {
 
 .p-meta {
   cursor: pointer;
-  /* Llena el hueco entre la carátula y los controles: así toda la franja del
-     título abre la vista grande (en móvil es el gesto natural, tocar el centro). */
-  flex: 1;
+  /* En escritorio no crece: así el corazón de favorito queda junto al nombre y
+     no flotando al borde, pegado a los controles del centro. En móvil sí crece
+     (ver el bloque responsive): allí el corazón se oculta y la franja del título
+     debe llenar el centro para que tocarla abra la vista grande. */
+  flex: 0 1 auto;
   min-width: 0;
 }
 
@@ -3678,6 +3680,12 @@ body[data-skin='neon'] #vol-range {
 
   .p-now .fav-btn {
     display: none;
+  }
+
+  /* Sin corazón a la vista, la franja del título recupera todo el ancho: tocar
+     el centro abre la vista grande (el gesto natural en móvil). */
+  .p-meta {
+    flex: 1;
   }
 
   .p-center {
