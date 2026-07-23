@@ -36,6 +36,15 @@ export const en = {
 
   search: { placeholder: 'Search your music…' },
 
+  about: {
+    tagline: 'Music and audiobooks, in your browser',
+    lead: 'FolderPlay plays your music and audiobooks right in the browser. There is no server and nothing leaves your device: you pick a folder and it plays.',
+    code: 'View the code on GitHub',
+    contact: 'Send a suggestion',
+    mailSubject: 'FolderPlay suggestion',
+    by: 'A FolderTools project',
+  },
+
   sidebar: {
     playlists: 'Your playlists',
     newList: 'New playlist',
@@ -45,7 +54,6 @@ export const en = {
     currentFolder: 'Current folder',
     language: 'Language',
     more: 'More options',
-    repo: 'GitHub',
   },
 
   welcome: {
@@ -236,6 +244,8 @@ export const en = {
     open: 'Settings',
     title: 'Settings',
     done: 'Done',
+    tabSettings: 'Settings',
+    tabAbout: 'About',
     section: {
       general: 'General',
       look: 'Appearance',
