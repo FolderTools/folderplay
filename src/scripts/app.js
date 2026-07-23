@@ -1352,7 +1352,20 @@ async function saveBatch() {
 
 // ---------- Render ----------
 
+// La vista Libros solo existe si hay libros (su pestaña se oculta si no). Sin
+// esto, desmarcar el último libro —o reabrir con el hash #books, antes de que el
+// escaneo detecte ninguno— deja la app en una vista que la interfaz ya no
+// ofrece: se veía una pantalla en blanco. Se cae a Canciones.
+function normalizeView() {
+  const inBook = state.detail?.type === 'book';
+  if (!inBook && state.view !== 'books') return; // no hay nada que normalizar
+  const books = bookList();
+  if (inBook && !books.some((book) => book.dir === state.detail.dir)) state.detail = null;
+  if (!state.detail && state.view === 'books' && !books.length) state.view = 'songs';
+}
+
 function render() {
+  normalizeView();
   renderNav();
   renderMain();
   renderPlayerBar();

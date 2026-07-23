@@ -169,6 +169,14 @@ llega al final sin lanzar.
 - Voltear un icono simétrico no comunica nada: `#i-sort` (flecha arriba y
   flecha abajo) con `scaleY(-1)` se veía idéntico y no se distinguía el orden
   ascendente del descendente. De ahí `#i-arrow-up` y la palabra al lado.
+- **No quedarse en la vista Libros sin libros.** La pestaña Libros se oculta si
+  `hasBooks()` es falso, así que estar en `state.view === 'books'` (o en un
+  `#book/<dir>` que ya no existe) con cero libros deja una vista que la interfaz
+  no ofrece y se ve **en blanco, sin error en consola**. Pasa al desmarcar el
+  último libro estando dentro, y al reabrir con el hash `#books` (antes del
+  escaneo las duraciones son `null`, así que los libros solo detectados aún no
+  cuentan). `normalizeView()`, al principio de `render()`, cae a Canciones si el
+  libro del detalle ya no existe o si la vista Libros se quedó sin libros.
 
 ## Decisiones clave
 
