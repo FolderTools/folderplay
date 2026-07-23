@@ -1967,6 +1967,32 @@ input[type='range']::-moz-range-progress {
   transition: transform 0.3s cubic-bezier(0.3, 0.8, 0.3, 1), visibility 0s;
 }
 
+/* Mientras se arrastra hacia abajo, sin transición: el panel sigue al dedo */
+.np.dragging {
+  transition: none;
+}
+
+/* Agarre: solo en táctil (móvil). Señala el gesto de deslizar para cerrar. */
+.np-grab {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--text-faint);
+  opacity: 0.5;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .np-grab {
+    display: block;
+  }
+}
+
 .np-bg {
   position: absolute;
   inset: -60px;

@@ -2048,6 +2048,59 @@ function closeNowPlaying() {
   }
 }
 
+// Gesto móvil: arrastrar la vista grande hacia abajo para cerrarla, siguiendo
+// el dedo. Solo actúa en táctil; con ratón no se disparan estos eventos.
+function bindNowPlayingGesture() {
+  const np = $('#np');
+  const CLOSE_AT = 110; // px arrastrados para que se cierre al soltar
+  let startY = 0;
+  let startX = 0;
+  let delta = 0;
+  let dragging = false;
+  let active = false;
+
+  np.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1 || !isNowPlayingOpen()) return;
+    active = true;
+    dragging = false;
+    delta = 0;
+    startY = e.touches[0].clientY;
+    startX = e.touches[0].clientX;
+  }, { passive: true });
+
+  np.addEventListener('touchmove', (e) => {
+    if (!active) return;
+    const dy = e.touches[0].clientY - startY;
+    const dx = e.touches[0].clientX - startX;
+    if (!dragging) {
+      // Solo se toma como "cerrar" si el gesto es claramente hacia abajo; si es
+      // horizontal o hacia arriba, se ignora (para no robar toques a los botones).
+      if (dy > 8 && Math.abs(dy) > Math.abs(dx)) {
+        dragging = true;
+        np.classList.add('dragging'); // sin transición mientras sigue al dedo
+      } else if (Math.abs(dx) > 10 || dy < -8) {
+        active = false;
+        return;
+      } else {
+        return;
+      }
+    }
+    delta = Math.max(0, dy);
+    np.style.transform = `translateY(${delta}px)`;
+    e.preventDefault();
+  }, { passive: false });
+
+  const end = () => {
+    if (!active) return;
+    active = false;
+    np.classList.remove('dragging');
+    np.style.transform = ''; // vuelve a mandar la clase (.open o cerrado)
+    if (dragging && delta > CLOSE_AT) closeNowPlaying();
+  };
+  np.addEventListener('touchend', end);
+  np.addEventListener('touchcancel', end);
+}
+
 // Las dos flechas (la del reproductor y la de la carátula) apuntan hacia
 // arriba para abrir y hacia abajo para cerrar.
 function syncExpandUi() {
@@ -2468,6 +2521,7 @@ function bindEvents() {
   $('#p-meta').addEventListener('click', toggleNowPlaying);
   $('#btn-expand-np').addEventListener('click', toggleNowPlaying);
   $('#np-close').addEventListener('click', closeNowPlaying);
+  bindNowPlayingGesture();
   $('#np-edit').addEventListener('click', () => {
     if (state.currentId != null) openEditor(state.currentId);
   });
