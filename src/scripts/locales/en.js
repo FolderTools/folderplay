@@ -45,6 +45,7 @@ export const en = {
     currentFolder: 'Current folder',
     language: 'Language',
     more: 'More options',
+    repo: 'GitHub',
   },
 
   welcome: {
@@ -58,6 +59,7 @@ export const en = {
     booksSub: 'Pick the folder where you keep your audiobooks and listen by chapters, with speed control, 15 and 30 second skips, a sleep timer and the spot where you left off saved for each book. Nothing to install, nothing uploaded. And if you also have music, it lives here too.',
     pickBooks: 'Choose audiobook folder',
     pickFallback: 'Your browser file picker will open',
+    repo: 'See the code on GitHub',
     reopen: 'Reopen folder',
     reopenNamed: 'Reopen “{name}”{extra}',
     songsCount: ' · {n} songs',
@@ -72,14 +74,6 @@ export const en = {
     openSource: 'Open source',
   },
 
-  feats: {
-    covers: 'Cover art and albums',
-    favs: 'Favorites',
-    queue: 'Queue and shuffle',
-    tags: 'Edit tags and covers',
-    search: 'Instant search',
-    books: 'Audiobooks by chapter',
-  },
 
   privacy: {
     line: 'Your music never leaves your computer: everything happens locally in your browser.',

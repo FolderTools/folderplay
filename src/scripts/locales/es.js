@@ -46,6 +46,7 @@ export const es = {
     currentFolder: 'Carpeta actual',
     language: 'Idioma',
     more: 'Más opciones',
+    repo: 'GitHub',
   },
 
   welcome: {
@@ -59,6 +60,7 @@ export const es = {
     booksSub: 'Elige la carpeta donde guardas tus audiolibros y escúchalos por capítulos, con control de velocidad, saltos de 15 y 30 segundos, temporizador y el punto donde lo dejaste guardado para cada libro. Sin instalar nada ni subir archivos. Y si también tienes música, aquí conviven.',
     pickBooks: 'Elegir carpeta de audiolibros',
     pickFallback: 'Se abrirá el selector de archivos del navegador',
+    repo: 'Mira el código en GitHub',
     reopen: 'Reabrir carpeta',
     reopenNamed: 'Reabrir “{name}”{extra}',
     songsCount: ' · {n} canciones',
@@ -73,14 +75,6 @@ export const es = {
     openSource: 'Código abierto',
   },
 
-  feats: {
-    covers: 'Carátulas y álbumes',
-    favs: 'Favoritos',
-    queue: 'Cola y aleatorio',
-    tags: 'Edita etiquetas y portadas',
-    search: 'Búsqueda instantánea',
-    books: 'Audiolibros por capítulos',
-  },
 
   privacy: {
     line: 'Tu música nunca sale de tu equipo: todo ocurre localmente en tu navegador.',

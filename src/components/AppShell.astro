@@ -134,14 +134,10 @@ const heroPick = isBooks ? 'welcome.pickBooks' : 'welcome.pick';
             <svg class="icon"><use href="#i-settings"/></svg>
             <span data-i18n="settings.open">Ajustes</span>
           </button>
-          <!--
-            Pendiente: enlace al repositorio. Descomentar cuando el repo sea público
-            y activar también el sello badges.openSource de la bienvenida.
-          <a class="btn-ghost" id="repo-link" href="https://github.com/USUARIO/folderplay" target="_blank" rel="noopener">
+          <a class="btn-ghost foot-btn" id="repo-link" href="https://github.com/FolderTools/folderplay" target="_blank" rel="noopener">
             <svg class="icon"><use href="#i-github"/></svg>
-            <span>GitHub</span>
+            <span data-i18n="sidebar.repo">GitHub</span>
           </a>
-          -->
         </div>
       </aside>
 
@@ -164,10 +160,8 @@ const heroPick = isBooks ? 'welcome.pickBooks' : 'welcome.pick';
             </button>
             <div class="welcome-inner">
               <div class="welcome-copy">
-                <div class="welcome-brand">
-                  <svg class="icon"><use href="#i-logo"/></svg>
-                  <span>Folder<b>Play</b></span>
-                </div>
+                <!-- Sin marca aquí: FolderPlay ya sale en la barra lateral (y en
+                     la cabecera móvil), así que el título sube arriba del todo. -->
                 <h1>
                   <span data-i18n={heroA}>{isBooks ? 'Tus audiolibros,' : 'Tu música,'}</span><br />
                   <span class="grad-text" data-i18n={heroB}>en tu navegador</span>
@@ -178,7 +172,7 @@ const heroPick = isBooks ? 'welcome.pickBooks' : 'welcome.pick';
                   <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.noAccount">Sin cuenta</span></span>
                   <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.noUpload">No sube nada</span></span>
                   <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.offline">Funciona sin conexión</span></span>
-                  <!-- <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.openSource">Código abierto</span></span> -->
+                  <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.openSource">Código abierto</span></span>
                 </div>
                 <div class="welcome-actions">
                   <button class="btn-primary big" id="pick-folder">
@@ -193,18 +187,17 @@ const heroPick = isBooks ? 'welcome.pickBooks' : 'welcome.pick';
                   </button>
                 </div>
                 <p class="drop-hint" data-i18n="welcome.drop">…o arrastra una carpeta aquí</p>
-                <div class="welcome-feats">
-                  <span class="feat-chip"><svg class="icon"><use href="#i-disc"/></svg> <span data-i18n="feats.covers"></span></span>
-                  <span class="feat-chip"><svg class="icon"><use href="#i-heart-fill"/></svg> <span data-i18n="feats.favs"></span></span>
-                  <span class="feat-chip"><svg class="icon"><use href="#i-shuffle"/></svg> <span data-i18n="feats.queue"></span></span>
-                  <span class="feat-chip"><svg class="icon"><use href="#i-edit"/></svg> <span data-i18n="feats.tags"></span></span>
-                  <span class="feat-chip"><svg class="icon"><use href="#i-search"/></svg> <span data-i18n="feats.search"></span></span>
-                  <span class="feat-chip"><svg class="icon"><use href="#i-book"/></svg> <span data-i18n="feats.books"></span></span>
+                <div class="welcome-foot">
+                  <button class="privacy" id="privacy-info">
+                    <svg class="icon"><use href="#i-shield"/></svg>
+                    <span><span data-i18n="privacy.line"></span> <b data-i18n="privacy.cta"></b></span>
+                  </button>
+                  <!-- El enlace refuerza la privacidad: puedes ver el código. -->
+                  <a class="privacy repo-link" href="https://github.com/FolderTools/folderplay" target="_blank" rel="noopener">
+                    <svg class="icon"><use href="#i-github"/></svg>
+                    <span data-i18n="welcome.repo">Mira el código en GitHub</span>
+                  </a>
                 </div>
-                <button class="privacy" id="privacy-info">
-                  <svg class="icon"><use href="#i-shield"/></svg>
-                  <span><span data-i18n="privacy.line"></span> <b data-i18n="privacy.cta"></b></span>
-                </button>
               </div>
 
               <!-- Vista previa del producto (maqueta CSS) -->
