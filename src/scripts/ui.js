@@ -56,7 +56,7 @@ export function zoomFactor() {
 let menuAnchor = null;
 
 /**
- * @param {{icon: string, label: string, hint?: string, danger?: boolean, fn: Function}[]} items
+ * @param {{icon: string, label: string, hint?: string, danger?: boolean, submenu?: boolean, fn: Function}[]} items
  * @param {HTMLElement|null} anchor Botón que lo abre, para no cerrarlo con su propio clic
  */
 function renderMenu(items, anchor = null) {
@@ -70,6 +70,7 @@ function renderMenu(items, anchor = null) {
           <span class="ctx-label">${esc(it.label)}</span>
           ${it.hint ? `<span class="ctx-hint">${esc(it.hint)}</span>` : ''}
         </span>
+        ${it.submenu ? `<svg class="icon ctx-sub" aria-hidden="true"><use href="#i-chev-down"/></svg>` : ''}
       </button>`)
     .join('');
   menu.hidden = false;
