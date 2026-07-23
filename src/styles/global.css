@@ -2989,7 +2989,8 @@ body[data-view='settings'] .view-title {
   flex-direction: column;
   gap: 22px;
   max-width: 520px;
-  margin-top: 6px;
+  margin: 6px auto 0; /* centra la tarjeta en el panel (antes pegada a la izq) */
+  text-align: center;
 }
 
 .about-link,
@@ -3000,6 +3001,7 @@ body[data-view='settings'] .view-title {
 .about-head {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
 }
 
@@ -3030,11 +3032,13 @@ body[data-view='settings'] .view-title {
   line-height: 1.6;
 }
 
-/* Nota de compatibilidad: solo en navegadores sin File System Access */
+/* Nota de compatibilidad: solo en navegadores sin File System Access. El texto
+   va a la izquierda aunque la tarjeta esté centrada: es un aviso, se lee mejor. */
 .about-compat {
   color: var(--text-dim);
   font-size: 13px;
   line-height: 1.55;
+  text-align: left;
   padding: 11px 14px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
@@ -3045,6 +3049,7 @@ body[data-view='settings'] .view-title {
 .about-links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
 }
 
@@ -3076,6 +3081,7 @@ body[data-view='settings'] .view-title {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   color: var(--text-faint);
   font-size: 13px;
