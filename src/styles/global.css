@@ -440,6 +440,12 @@ body.has-library #remove-folder {
   color: var(--text-faint);
 }
 
+/* La X de limpiar es un control nativo: sin esto no cambia a manita aunque
+   sí se puede pulsar, y se ve raro. */
+.search-box input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
 /* Tuerca de Ajustes: empujada a la derecha, rellena la esquina que estaba vacía */
 .topbar-btn {
   margin-left: auto;
@@ -1702,9 +1708,9 @@ body.playing .art-eq {
 
 .p-meta {
   cursor: pointer;
-}
-
-.p-meta {
+  /* Llena el hueco entre la carátula y los controles: así toda la franja del
+     título abre la vista grande (en móvil es el gesto natural, tocar el centro). */
+  flex: 1;
   min-width: 0;
 }
 
@@ -1771,6 +1777,23 @@ body.playing .art-eq {
   height: 4px;
   border-radius: 50%;
   background: var(--accent-2);
+}
+
+/* Repetir "una": un 1 en la esquina en vez de dibujarlo sobre las flechas.
+   Sustituye al punto de estado, que quedaría redundante. */
+#btn-repeat.one::before {
+  content: '1';
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent-2);
+}
+
+#btn-repeat.one::after {
+  display: none;
 }
 
 /* Saltos largos: aparecen solo con contenido largo (capítulos, mezclas) */
@@ -2076,6 +2099,12 @@ body.playing .np-eq {
   background: var(--overlay-btn);
   padding: 9px 16px;
   font-size: 13.5px;
+}
+
+/* Favorito activo en la vista grande */
+#np-fav.on {
+  color: var(--accent-2);
+  border-color: var(--accent-2);
 }
 
 /* ---------- Loader de carpeta ---------- */
@@ -2848,7 +2877,7 @@ body.fav-playing #seek-range::-moz-range-thumb {
   flex-direction: column;
   gap: 26px;
   width: min(760px, 100%);
-  margin: 4px auto 0;
+  margin: 22px auto 0;
 }
 
 body[data-view='settings'] .view-title {
@@ -2862,7 +2891,7 @@ body[data-view='settings'] .view-title {
   display: flex;
   gap: 4px;
   width: min(760px, 100%);
-  margin: 6px auto 0;
+  margin: 18px auto 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -2890,8 +2919,14 @@ body[data-view='settings'] .view-title {
 .about {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
   max-width: 520px;
+  margin-top: 6px;
+}
+
+.about-link,
+.about-meta a {
+  text-decoration: none;
 }
 
 .about-head {
@@ -3017,16 +3052,32 @@ body[data-view='settings'] .view-title {
 }
 
 .set-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 8px 10px 8px 14px;
   font: inherit;
   font-weight: 600;
   font-size: 13.5px;
   flex-shrink: 0;
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.set-select:hover,
+.set-select.open {
+  border-color: var(--text-faint);
+  background: var(--bg-hover);
+}
+
+.set-select .icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-faint);
 }
 
 /* Interruptor */
@@ -3803,11 +3854,13 @@ body[data-skin='neon'] #vol-range {
     bottom: calc(var(--player-h) + 76px);
   }
 
-  /* Bienvenida en una columna, con la llamada a la acción a la vista */
+  /* Bienvenida en una columna, con la llamada a la acción a la vista. El
+     padding-top deja sitio al botón de idioma (esquina superior), que si no se
+     encimaba con el titular. */
   .welcome-inner {
     flex-direction: column;
     text-align: center;
-    padding: 20px 16px 40px;
+    padding: 64px 16px 40px;
   }
 
   .welcome-actions,

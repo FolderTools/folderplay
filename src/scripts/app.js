@@ -673,14 +673,14 @@ function toggleFav(id) {
   else state.favs.delete(track.path);
   setJson('favs', [...state.favs]);
 
-  // En la vista de Favoritos, quitar el corazón hace desaparecer la fila: ahí
-  // sí hay que repintar la lista. En cualquier otra, basta con esa fila.
-  if (state.view === 'favs' && !state.detail) {
-    render();
-    return;
+  if (id === state.currentId) {
+    renderPlayerBar();
+    renderNowPlaying(); // corazón de la vista grande (no-op si está cerrada)
   }
-  paintFav(id, isFav);
-  if (id === state.currentId) renderPlayerBar(); // el corazón de la barra y la vista grande
+  // En la vista de Favoritos, quitar el corazón hace desaparecer la fila: ahí
+  // hay que repintar la lista. En cualquier otra, basta con esa fila.
+  if (state.view === 'favs' && !state.detail) render();
+  else paintFav(id, isFav);
 }
 
 // Actualiza solo el corazón de una fila, sin reconstruir la lista.
@@ -854,7 +854,11 @@ function clearSearch() {
 
 function openTrackMenu(e, id) {
   const track = trackById(id);
+  const isFav = state.favs.has(track.path);
   const items = [
+    // El corazón está oculto en la fila en móvil; aquí el favorito llega a
+    // cualquier pista y en cualquier tamaño de pantalla.
+    { icon: isFav ? 'heart-fill' : 'heart', label: isFav ? t('menu.unfav') : t('menu.fav'), fn: () => toggleFav(id) },
     { icon: 'queue', label: t('menu.addQueue'), fn: () => addToQueue(id) },
     { icon: 'next', label: t('menu.playNext'), fn: () => playNext(id) },
     { icon: 'check', label: t('menu.select'), fn: () => enterSelectMode(id) },
@@ -925,12 +929,12 @@ function openTrackMenu(e, id) {
   showMenu(e.clientX, e.clientY, items, e.currentTarget);
 }
 
-// Menú de la cabecera móvil: carpeta y ajustes en un solo sitio.
+// Menú de la cabecera móvil: solo acciones de carpeta. Ajustes ya está en la
+// tuerca de la barra superior, justo debajo; tenerlo aquí también sobraba.
 function openHeadMenu(e) {
   const items = [
     { icon: 'folder', label: t('sidebar.changeFolder'), fn: pickFolder },
     { icon: 'trash', label: t('sidebar.removeFolder'), danger: true, fn: removeFolder },
-    { icon: 'settings', label: t('settings.open'), fn: () => { settingsTab = 'settings'; goToView('settings'); } },
   ];
   showMenu(e.clientX - 180, e.clientY + 10, items, e.currentTarget);
 }
@@ -1471,8 +1475,11 @@ function bindTrackRows(main, list) {
       if (state.currentId === id) togglePlay();
       else playFromContext(id, contextIds);
     });
-    row.querySelector('.fav-btn').addEventListener('click', () => toggleFav(id));
-    row.querySelector('.row-more').addEventListener('click', (e) => openTrackMenu(e, id));
+    // stopPropagation: sin esto el clic burbujea a la fila. Y como paintFav
+    // reemplaza el corazón al vuelo, el guardia closest('.fav-btn') de la fila
+    // mira un nodo ya desprendido, falla, y la fila reproduce o pausa.
+    row.querySelector('.fav-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleFav(id); });
+    row.querySelector('.row-more').addEventListener('click', (e) => { e.stopPropagation(); openTrackMenu(e, id); });
   });
 }
 
@@ -1996,8 +2003,12 @@ function renderPlayerBar() {
 
   $('#btn-play').innerHTML = ICON(audio.paused ? 'play' : 'pause');
   $('#btn-shuffle').classList.toggle('on', state.shuffle);
-  $('#btn-repeat').classList.toggle('on', state.repeat !== 'off');
-  $('#btn-repeat').innerHTML = ICON(state.repeat === 'one' ? 'repeat-one' : 'repeat');
+  // Siempre las mismas flechas; el modo "una" se marca con un "1" en la esquina
+  // (dibujar el "1" dentro del icono se encimaba con las flechas).
+  const repeatBtn = $('#btn-repeat');
+  repeatBtn.classList.toggle('on', state.repeat !== 'off');
+  repeatBtn.classList.toggle('one', state.repeat === 'one');
+  repeatBtn.innerHTML = ICON('repeat');
   const vol = audio.muted ? 0 : audio.volume;
   $('#btn-vol').innerHTML = ICON(vol === 0 ? 'vol-mute' : 'vol');
   $('#vol-range').value = vol * 100;
@@ -2070,6 +2081,10 @@ function renderNowPlaying() {
   $('#np-title').textContent = track.title;
   $('#np-artist').textContent = dispArtist(track.artist);
   $('#np-album').textContent = dispAlbum(track.album);
+  const fav = state.favs.has(track.path);
+  const npFav = $('#np-fav');
+  npFav.classList.toggle('on', fav);
+  npFav.querySelector('use').setAttribute('href', fav ? '#i-heart-fill' : '#i-heart');
 }
 
 // ---------- Editor de etiquetas ----------
@@ -2444,6 +2459,9 @@ function bindEvents() {
     else openExtrasMenu(e.currentTarget);
   });
   $('#p-fav').addEventListener('click', () => {
+    if (state.currentId != null) toggleFav(state.currentId);
+  });
+  $('#np-fav').addEventListener('click', () => {
     if (state.currentId != null) toggleFav(state.currentId);
   });
   $('#p-art').addEventListener('click', toggleNowPlaying);
