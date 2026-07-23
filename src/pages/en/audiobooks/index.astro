@@ -1,0 +1,16 @@
+---
+// Audiobooks page (English). Same app as the music one, with its own <head>
+// and headline to rank for "audiobook player", a different search intent.
+import '../../../styles/global.css';
+import HeadMeta from '../../../components/HeadMeta.astro';
+import AppShell from '../../../components/AppShell.astro';
+---
+
+<html lang="en">
+  <head>
+    <HeadMeta lang="en" variant="books" />
+  </head>
+  <body>
+    <AppShell variant="books" />
+  </body>
+</html>

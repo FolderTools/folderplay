@@ -1,0 +1,17 @@
+---
+// Página de audiolibros (canónica en español). Misma app que la de música,
+// con su propio <head> y titular para posicionar por "reproductor de
+// audiolibros", una búsqueda distinta a la de música.
+import '../../styles/global.css';
+import HeadMeta from '../../components/HeadMeta.astro';
+import AppShell from '../../components/AppShell.astro';
+---
+
+<html lang="es">
+  <head>
+    <HeadMeta lang="es" variant="books" />
+  </head>
+  <body>
+    <AppShell variant="books" />
+  </body>
+</html>

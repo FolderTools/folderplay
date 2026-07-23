@@ -1,0 +1,493 @@
+---
+// Cuerpo completo de la app. Lo comparten todas las páginas: el marcado es el
+// mismo, solo cambian las etiquetas del <head>, el idioma inicial y —según la
+// variante— el titular de la bienvenida.
+//
+// `variant`: 'music' (por defecto) o 'books'. La página de audiolibros reusa
+// esta misma app; solo cambia la puerta de entrada. Las claves de i18n se
+// eligen aquí y el texto de reserva (para quien no ejecuta JS) va en español,
+// como en el resto; i18n lo traduce en caliente.
+const { variant = 'music' } = Astro.props;
+const isBooks = variant === 'books';
+const heroA = isBooks ? 'welcome.booksTitleA' : 'welcome.titleA';
+const heroB = isBooks ? 'welcome.booksTitleB' : 'welcome.titleB';
+const heroSub = isBooks ? 'welcome.booksSub' : 'welcome.sub';
+const heroPick = isBooks ? 'welcome.pickBooks' : 'welcome.pick';
+---
+    <!-- Sprite de iconos -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <!-- Logo provisional: carpeta con un play recortado (fill-rule evenodd) -->
+        <symbol id="i-logo" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M4.8 4.2h4.06a2.2 2.2 0 0 1 1.55.64L11.9 6.2h7.3A2.8 2.8 0 0 1 22 9v8.6a2.8 2.8 0 0 1-2.8 2.8H4.8A2.8 2.8 0 0 1 2 17.6V7a2.8 2.8 0 0 1 2.8-2.8ZM9 10.55v5.9a.75.75 0 0 0 1.14.64l4.85-2.95a.75.75 0 0 0 0-1.28L10.14 9.91A.75.75 0 0 0 9 10.55Z"/></symbol>
+        <symbol id="i-note" viewBox="0 0 24 24"><path fill="currentColor" d="M9 18.5a3 3 0 1 1-2-2.83V6.4a1 1 0 0 1 .76-.97l8-2A1 1 0 0 1 17 4.4v10.1a3 3 0 1 1-2-2.83V8.28l-6 1.5Z"/></symbol>
+        <symbol id="i-disc" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 13a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm0-4a1 1 0 1 0 1 1 1 1 0 0 0-1-1Z"/></symbol>
+        <symbol id="i-mic" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3-4-5-8-5Z"/></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 20s-7.5-4.6-9.3-9A5 5 0 0 1 12 6.7 5 5 0 0 1 21.3 11c-1.8 4.4-9.3 9-9.3 9Z"/></symbol>
+        <symbol id="i-heart-fill" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20s-7.5-4.6-9.3-9A5 5 0 0 1 12 6.7 5 5 0 0 1 21.3 11c-1.8 4.4-9.3 9-9.3 9Z"/></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.54.84l10-6.5a1 1 0 0 0 0-1.68l-10-6.5A1 1 0 0 0 8 5.5Z"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
+        <symbol id="i-prev" viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h2v14H6zm12.5.7v12.6a1 1 0 0 1-1.55.83L9 12.83a1 1 0 0 1 0-1.66l7.95-6.3a1 1 0 0 1 1.55.83Z"/></symbol>
+        <symbol id="i-next" viewBox="0 0 24 24"><path fill="currentColor" d="M16 5h2v14h-2zM5.5 5.7v12.6a1 1 0 0 0 1.55.83l7.95-6.3a1 1 0 0 0 0-1.66L7.05 4.87a1 1 0 0 0-1.55.83Z"/></symbol>
+        <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="currentColor" d="M17 4h4v4h-2V7.4l-3.9 3.9-1.4-1.4L17.6 6H17ZM3 6h4.6l3 3-1.4 1.4L6.8 8H3Zm14.6 10H17v-2h4v4h-2v-.6l-4.3-4.3 1.4-1.4ZM3 16h3.8l3-3 1.4 1.4-3.6 3.6H3Z"/></symbol>
+        <symbol id="i-repeat" viewBox="0 0 24 24"><path fill="currentColor" d="M7 7h10V5.4a.5.5 0 0 1 .85-.35l2.8 2.8a.5.5 0 0 1 0 .7l-2.8 2.8A.5.5 0 0 1 17 11V9H7a1 1 0 0 0-1 1v2H4v-2a3 3 0 0 1 3-3Zm10 10H7v1.6a.5.5 0 0 1-.85.35l-2.8-2.8a.5.5 0 0 1 0-.7l2.8-2.8A.5.5 0 0 1 7 13v2h10a1 1 0 0 0 1-1v-2h2v2a3 3 0 0 1-3 3Z"/></symbol>
+        <symbol id="i-repeat-one" viewBox="0 0 24 24"><path fill="currentColor" d="M7 7h10V5.4a.5.5 0 0 1 .85-.35l2.8 2.8a.5.5 0 0 1 0 .7l-2.8 2.8A.5.5 0 0 1 17 11V9H7a1 1 0 0 0-1 1v2H4v-2a3 3 0 0 1 3-3Zm10 10H7v1.6a.5.5 0 0 1-.85.35l-2.8-2.8a.5.5 0 0 1 0-.7l2.8-2.8A.5.5 0 0 1 7 13v2h10a1 1 0 0 0 1-1v-2h2v2a3 3 0 0 1-3 3Zm-5.5-3.5v-4l-1 .5V8.8l2.3-1.1v5.8Z"/></symbol>
+        <symbol id="i-vol" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h3.5l4.5 3.8V5.2L7.5 9Zm12.5 3a3.5 3.5 0 0 0-2-3.16v6.32a3.5 3.5 0 0 0 2-3.16Zm-2-7.7v2.1a6 6 0 0 1 0 11.2v2.1a8 8 0 0 0 0-15.4Z"/></symbol>
+        <symbol id="i-vol-mute" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h3.5l4.5 3.8V5.2L7.5 9Zm16.2 6.3-1.4 1.4-2.3-2.3-2.3 2.3-1.4-1.4 2.3-2.3-2.3-2.3 1.4-1.4 2.3 2.3 2.3-2.3 1.4 1.4-2.3 2.3Z"/></symbol>
+        <symbol id="i-queue" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h12v2H3Zm0 5h12v2H3Zm0 5h8v2H3Zm16-9.6a1 1 0 0 0-1.24-.97l-2 .5a1 1 0 0 0-.76.97v5.35a2.25 2.25 0 1 0 1.5 2.12V9.28l2.5-.63Z"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><path fill="currentColor" d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3Zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Z"/></symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h5l2 2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24"><path fill="currentColor" d="m10.8 19.4-7.1-7.1a.4.4 0 0 1 0-.6l7.1-7.1 1.4 1.4-5.3 5.3H21v2H6.9l5.3 5.3Z"/></symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5Zm-1.2 14.5-3.6-3.6 1.4-1.4 2.2 2.2 4.6-4.6 1.4 1.4Z"/></symbol>
+        <symbol id="i-edit" viewBox="0 0 24 24"><path fill="currentColor" d="M4 20h4.2L19.6 8.6a2 2 0 0 0 0-2.8L18.2 4.4a2 2 0 0 0-2.8 0L4 15.8Zm12.8-14.2 1.4 1.4-1.6 1.6-1.4-1.4ZM6 16.6l7.8-7.8 1.4 1.4L7.4 18H6Z"/></symbol>
+        <symbol id="i-expand" viewBox="0 0 24 24"><path fill="currentColor" d="m6.7 14.7-1.4-1.4 6-6a1 1 0 0 1 1.4 0l6 6-1.4 1.4L12 9.4Z"/></symbol>
+        <symbol id="i-chev-down" viewBox="0 0 24 24"><path fill="currentColor" d="m6.7 9.3 5.3 5.3 5.3-5.3 1.4 1.4-6 6a1 1 0 0 1-1.4 0l-6-6Z"/></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4Z"/></symbol>
+        <symbol id="i-more" viewBox="0 0 24 24"><path fill="currentColor" d="M5.5 10.5A1.5 1.5 0 1 1 4 12a1.5 1.5 0 0 1 1.5-1.5Zm6.5 0A1.5 1.5 0 1 1 10.5 12 1.5 1.5 0 0 1 12 10.5Zm6.5 0A1.5 1.5 0 1 1 17 12a1.5 1.5 0 0 1 1.5-1.5Z"/></symbol>
+        <!-- Agarre de arrastre: dos columnas de puntos -->
+        <symbol id="i-grip" viewBox="0 0 24 24"><path fill="currentColor" d="M9 5.5a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 9 5.5Zm6 0A1.5 1.5 0 1 1 13.5 7 1.5 1.5 0 0 1 15 5.5ZM9 10.5A1.5 1.5 0 1 1 7.5 12 1.5 1.5 0 0 1 9 10.5Zm6 0A1.5 1.5 0 1 1 13.5 12 1.5 1.5 0 0 1 15 10.5ZM9 15.5A1.5 1.5 0 1 1 7.5 17 1.5 1.5 0 0 1 9 15.5Zm6 0A1.5 1.5 0 1 1 13.5 17 1.5 1.5 0 0 1 15 15.5Z"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path fill="currentColor" d="M9.4 3h5.2l1 1.8H20v2H4v-2h4.4ZM5.9 8.8h12.2l-.83 11.3A2 2 0 0 1 15.28 22H8.72a2 2 0 0 1-2-1.9Zm3.6 2.2v8h1.6v-8Zm3.4 0v8h1.6v-8Z"/></symbol>
+        <symbol id="i-globe" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm6.9 9h-3a15.3 15.3 0 0 0-1.2-5.4A8 8 0 0 1 18.9 11ZM12 4.1c.8 1.1 1.7 3.3 1.9 6.9h-3.8c.2-3.6 1.1-5.8 1.9-6.9ZM8.3 5.6A15.3 15.3 0 0 0 7.1 11h-3a8 8 0 0 1 4.2-5.4ZM4.1 13h3a15.3 15.3 0 0 0 1.2 5.4A8 8 0 0 1 4.1 13Zm7.9 6.9c-.8-1.1-1.7-3.3-1.9-6.9h3.8c-.2 3.6-1.1 5.8-1.9 6.9Zm3.7-1.5a15.3 15.3 0 0 0 1.2-5.4h3a8 8 0 0 1-4.2 5.4Z"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2.5h11.5A1.5 1.5 0 0 1 19 4v16a1.5 1.5 0 0 1-1.5 1.5H6A2.5 2.5 0 0 1 3.5 19V5A2.5 2.5 0 0 1 6 2.5Zm0 15A1.5 1.5 0 0 0 4.5 19 1.5 1.5 0 0 0 6 20.5h11V17.5Zm1.5-11h8v2h-8Zm0 3.5h8v2h-8Z"/></symbol>
+        <!-- Saltos: el número va dentro del aro y es lo que de verdad se lee,
+             así que el aro se dibuja fino y algo más abierto para dejarle sitio.
+             El texto hereda la tipografía de la página (el `use` la propaga);
+             sin tamaño suficiente salían dos dígitos borrosos. -->
+        <symbol id="i-back15" viewBox="0 0 24 24">
+          <g transform="translate(24 0) scale(-1 1)">
+            <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M18.6 7.4A8.2 8.2 0 1 0 20.2 12"/>
+            <path fill="currentColor" d="M21.4 2.6v5.2h-5.2z"/>
+          </g>
+          <text x="12" y="15.9" text-anchor="middle" font-size="10.5" font-weight="700" letter-spacing="-0.5" fill="currentColor">15</text>
+        </symbol>
+        <symbol id="i-fwd30" viewBox="0 0 24 24">
+          <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M18.6 7.4A8.2 8.2 0 1 0 20.2 12"/>
+          <path fill="currentColor" d="M21.4 2.6v5.2h-5.2z"/>
+          <text x="12" y="15.9" text-anchor="middle" font-size="10.5" font-weight="700" letter-spacing="-0.5" fill="currentColor">30</text>
+        </symbol>
+        <!-- Flecha única: la de doble punta (#i-sort) al voltearse quedaba igual
+             y no se distinguía ascendente de descendente. -->
+        <symbol id="i-arrow-up" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.6 5.2 10.4l1.77 1.77L10.75 8.4V20.4h2.5V8.4l3.78 3.77L18.8 10.4Z"/></symbol>
+        <symbol id="i-speed" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4a9 9 0 0 0-7.8 13.5.9.9 0 0 0 .78.45h14.04a.9.9 0 0 0 .78-.45A9 9 0 0 0 12 4Zm0 2a7 7 0 0 1 6.2 10.2H5.8A7 7 0 0 1 12 6Zm4.2 2.5-3.5 3.06a1.8 1.8 0 1 0 1.1 1.2Z"/></symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5 8.6 8.6 0 1 0 20.5 14.6Z"/></symbol>
+        <!-- Corona dentada + centro hueco: como dibujo suelto era una mancha -->
+        <symbol id="i-settings" viewBox="0 0 24 24">
+          <path fill="currentColor" fill-rule="evenodd" d="M12 4.4a7.6 7.6 0 1 0 0 15.2 7.6 7.6 0 0 0 0-15.2Zm0 4.4a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4Z"/>
+          <g fill="currentColor">
+            <rect x="10.5" y="1.4" width="3" height="3.6" rx="1.1"/>
+            <rect x="10.5" y="19" width="3" height="3.6" rx="1.1"/>
+            <rect x="1.4" y="10.5" width="3.6" height="3" rx="1.1"/>
+            <rect x="19" y="10.5" width="3.6" height="3" rx="1.1"/>
+            <rect x="10.5" y="1.4" width="3" height="3.6" rx="1.1" transform="rotate(45 12 12)"/>
+            <rect x="10.5" y="19" width="3" height="3.6" rx="1.1" transform="rotate(45 12 12)"/>
+            <rect x="1.4" y="10.5" width="3.6" height="3" rx="1.1" transform="rotate(45 12 12)"/>
+            <rect x="19" y="10.5" width="3.6" height="3" rx="1.1" transform="rotate(45 12 12)"/>
+          </g>
+        </symbol>
+        <symbol id="i-sparkle" viewBox="0 0 24 24"><path fill="currentColor" d="M11 2.5 12.7 7 17 8.7 12.7 10.4 11 15l-1.7-4.6L5 8.7 9.3 7Zm7 9 .9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9Zm-11 3 .7 1.8 1.8.7-1.8.7L7 19.5l-.7-1.8-1.8-.7 1.8-.7Z"/></symbol>
+        <symbol id="i-sort" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5 3.5 9h2.25v10.5h2.5V9H10.5Zm10 15L20.5 15h-2.25V4.5h-2.5V15H13.5Z"/></symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3Zm0 5h18v2H3Zm0 5h18v2H3Z"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path fill="currentColor" d="M9.6 16.2 5.4 12l-1.4 1.4 5.6 5.6L20.4 8.2 19 6.8Z"/></symbol>
+        <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></symbol>
+      </defs>
+    </svg>
+
+    <div class="layout">
+      <!-- Barra lateral (en móvil se convierte en cabecera compacta) -->
+      <aside class="sidebar">
+        <div class="brand">
+          <svg class="icon brand-icon"><use href="#i-logo"/></svg>
+          <span>Folder<b>Play</b></span>
+        </div>
+        <button class="head-more" id="head-more" data-i18n-aria="sidebar.more" data-i18n-title="sidebar.more">
+          <svg class="icon"><use href="#i-menu"/></svg>
+        </button>
+        <nav class="nav">
+          <button class="nav-btn active" data-view="songs"><svg class="icon"><use href="#i-note"/></svg> <span data-i18n="nav.songs">Canciones</span></button>
+          <button class="nav-btn" data-view="albums"><svg class="icon"><use href="#i-disc"/></svg> <span data-i18n="nav.albums">Álbumes</span></button>
+          <button class="nav-btn" data-view="artists"><svg class="icon"><use href="#i-mic"/></svg> <span data-i18n="nav.artists">Artistas</span></button>
+          <button class="nav-btn" data-view="favs"><svg class="icon"><use href="#i-heart"/></svg> <span data-i18n="nav.favs">Favoritos</span></button>
+          <!-- Solo se muestra si la biblioteca tiene audiolibros -->
+          <button class="nav-btn" data-view="books" hidden><svg class="icon"><use href="#i-book"/></svg> <span data-i18n="nav.books">Libros</span></button>
+        </nav>
+        <div class="playlists">
+          <div class="pl-head">
+            <span data-i18n="sidebar.playlists">Tus listas</span>
+            <button id="pl-new" data-i18n-title="sidebar.newList" data-i18n-aria="sidebar.newList"><svg class="icon"><use href="#i-plus"/></svg></button>
+          </div>
+          <div id="pl-list" class="pl-list"></div>
+        </div>
+        <div class="sidebar-foot">
+          <div class="folder-chip" data-i18n-title="sidebar.currentFolder">
+            <svg class="icon"><use href="#i-folder"/></svg>
+            <span id="folder-name"></span>
+          </div>
+          <button class="btn-ghost" id="change-folder" data-i18n="sidebar.changeFolder">Cambiar carpeta</button>
+          <button class="btn-ghost" id="remove-folder" data-i18n="sidebar.removeFolder">Quitar carpeta</button>
+          <button class="btn-ghost lang-btn" id="settings-open" data-i18n-title="settings.open">
+            <svg class="icon"><use href="#i-settings"/></svg>
+            <span data-i18n="settings.open">Ajustes</span>
+          </button>
+          <!--
+            Pendiente: enlace al repositorio. Descomentar cuando el repo sea público
+            y activar también el sello badges.openSource de la bienvenida.
+          <a class="btn-ghost" id="repo-link" href="https://github.com/USUARIO/folderplay" target="_blank" rel="noopener">
+            <svg class="icon"><use href="#i-github"/></svg>
+            <span>GitHub</span>
+          </a>
+          -->
+        </div>
+      </aside>
+
+      <!-- Contenido -->
+      <div class="content">
+        <header class="topbar">
+          <div class="search-box">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input id="search" type="search" data-i18n-placeholder="search.placeholder" autocomplete="off" />
+          </div>
+        </header>
+
+        <main class="main-scroll" id="main-scroll">
+          <!-- Pantalla de bienvenida -->
+          <section id="welcome" class="welcome">
+            <!-- Idioma también en la bienvenida: aquí la barra lateral está oculta -->
+            <button class="welcome-lang" id="welcome-lang" data-i18n-title="sidebar.language">
+              <svg class="icon"><use href="#i-globe"/></svg>
+              <span id="welcome-lang-label">Español</span>
+            </button>
+            <div class="welcome-inner">
+              <div class="welcome-copy">
+                <div class="welcome-brand">
+                  <svg class="icon"><use href="#i-logo"/></svg>
+                  <span>Folder<b>Play</b></span>
+                </div>
+                <h1>
+                  <span data-i18n={heroA}>{isBooks ? 'Tus audiolibros,' : 'Tu música,'}</span><br />
+                  <span class="grad-text" data-i18n={heroB}>en tu navegador</span>
+                </h1>
+                <p class="welcome-sub" data-i18n={heroSub}></p>
+                <div class="welcome-badges">
+                  <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.free">Gratis</span></span>
+                  <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.noAccount">Sin cuenta</span></span>
+                  <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.noUpload">No sube nada</span></span>
+                  <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.offline">Funciona sin conexión</span></span>
+                  <!-- <span class="badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="badges.openSource">Código abierto</span></span> -->
+                </div>
+                <div class="welcome-actions">
+                  <button class="btn-primary big" id="pick-folder">
+                    <svg class="icon"><use href="#i-folder"/></svg>
+                    <span data-i18n={heroPick}>{isBooks ? 'Elegir carpeta de audiolibros' : 'Elegir carpeta de música'}</span>
+                    <span class="pick-hint"></span>
+                  </button>
+                  <button class="btn-ghost big" id="reopen-folder" hidden>
+                    <svg class="icon"><use href="#i-folder"/></svg>
+                    <!-- El texto lo pone app.js: lleva el nombre de la carpeta -->
+                    <span></span>
+                  </button>
+                </div>
+                <p class="drop-hint" data-i18n="welcome.drop">…o arrastra una carpeta aquí</p>
+                <div class="welcome-feats">
+                  <span class="feat-chip"><svg class="icon"><use href="#i-disc"/></svg> <span data-i18n="feats.covers"></span></span>
+                  <span class="feat-chip"><svg class="icon"><use href="#i-heart-fill"/></svg> <span data-i18n="feats.favs"></span></span>
+                  <span class="feat-chip"><svg class="icon"><use href="#i-shuffle"/></svg> <span data-i18n="feats.queue"></span></span>
+                  <span class="feat-chip"><svg class="icon"><use href="#i-edit"/></svg> <span data-i18n="feats.tags"></span></span>
+                  <span class="feat-chip"><svg class="icon"><use href="#i-search"/></svg> <span data-i18n="feats.search"></span></span>
+                  <span class="feat-chip"><svg class="icon"><use href="#i-book"/></svg> <span data-i18n="feats.books"></span></span>
+                </div>
+                <button class="privacy" id="privacy-info">
+                  <svg class="icon"><use href="#i-shield"/></svg>
+                  <span><span data-i18n="privacy.line"></span> <b data-i18n="privacy.cta"></b></span>
+                </button>
+              </div>
+
+              <!-- Vista previa del producto (maqueta CSS) -->
+              <div class="welcome-mock" aria-hidden="true">
+                <div class="mock-app">
+                  <div class="mock-chrome"><i></i><i></i><i></i></div>
+                  <div class="mock-body">
+                    <div class="mock-side">
+                      <span class="mock-logo"></span>
+                      <span class="mock-nav on"></span>
+                      <span class="mock-nav"></span>
+                      <span class="mock-nav"></span>
+                      <span class="mock-nav"></span>
+                    </div>
+                    <div class="mock-list">
+                      <span class="mock-title"></span>
+                      <div class="mock-row"><span class="mock-art a1"></span><span class="mock-lines"><span class="l1"></span><span class="l2"></span></span><span class="mock-time"></span></div>
+                      <div class="mock-row active"><span class="mock-art a2"></span><span class="mock-lines"><span class="l1"></span><span class="l2"></span></span><span class="mock-eq"><i></i><i></i><i></i></span></div>
+                      <div class="mock-row"><span class="mock-art a3"></span><span class="mock-lines"><span class="l1"></span><span class="l2"></span></span><span class="mock-time"></span></div>
+                      <div class="mock-row"><span class="mock-art a4"></span><span class="mock-lines"><span class="l1"></span><span class="l2"></span></span><span class="mock-time"></span></div>
+                      <div class="mock-row"><span class="mock-art a5"></span><span class="mock-lines"><span class="l1"></span><span class="l2"></span></span><span class="mock-time"></span></div>
+                      <div class="mock-row"><span class="mock-art a6"></span><span class="mock-lines"><span class="l1"></span><span class="l2"></span></span><span class="mock-time"></span></div>
+                    </div>
+                  </div>
+                  <div class="mock-bar">
+                    <span class="mock-art a2 big"></span>
+                    <span class="mock-lines"><span class="l1"></span><span class="l2"></span></span>
+                    <span class="mock-controls"><i></i><i class="play"></i><i></i></span>
+                    <span class="mock-prog"><i></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input id="folder-input" type="file" webkitdirectory multiple hidden />
+          </section>
+
+          <!-- Vistas de la biblioteca -->
+          <section id="view" class="view"></section>
+        </main>
+
+        <!-- Atajo flotante a la canción en curso (solo cuando se sale de pantalla) -->
+        <button class="goto-fab" id="goto-fab" hidden
+                data-i18n-title="list.gotoCurrent" data-i18n-aria="list.gotoCurrent">
+          <svg class="icon"><use href="#i-note"/></svg>
+        </button>
+      </div>
+
+      <!-- Panel de cola -->
+      <aside class="queue-panel" id="queue-panel">
+        <div class="queue-head">
+          <h2 data-i18n="queue.title">Cola de reproducción</h2>
+          <button class="btn-ghost" id="queue-close" data-i18n="queue.close">Cerrar</button>
+        </div>
+        <div id="queue-list" class="queue-list"></div>
+      </aside>
+    </div>
+
+    <!-- Barra de selección múltiple (sobre el reproductor) -->
+    <div class="select-bar" id="select-bar" hidden>
+      <button class="ctl" id="sel-close" data-i18n-aria="list.exitSelect" data-i18n-title="list.exitSelect">
+        <svg class="icon"><use href="#i-x"/></svg>
+      </button>
+      <span class="sel-count" id="sel-count"></span>
+      <div class="sel-actions">
+        <button class="btn-ghost tiny" id="sel-all" data-i18n="list.selectAll">Todas</button>
+        <button class="btn-ghost tiny" id="sel-edit"><svg class="icon"><use href="#i-edit"/></svg> <span data-i18n="editor.title"></span></button>
+        <button class="btn-ghost tiny" id="sel-queue"><svg class="icon"><use href="#i-queue"/></svg> <span data-i18n="menu.addQueue"></span></button>
+        <button class="btn-ghost tiny" id="sel-playlist"><svg class="icon"><use href="#i-plus"/></svg> <span data-i18n="nav.playlists"></span></button>
+        <button class="btn-ghost tiny" id="sel-book"><svg class="icon"><use href="#i-book"/></svg> <span data-i18n="books.markSel"></span></button>
+        <button class="btn-ghost tiny danger" id="sel-delete"><svg class="icon"><use href="#i-trash"/></svg> <span data-i18n="menu.deleteDisk"></span></button>
+      </div>
+    </div>
+
+    <!-- Barra del reproductor -->
+    <footer class="player inactive" id="player">
+      <canvas class="p-viz" id="p-viz" aria-hidden="true"></canvas>
+
+      <div class="p-now">
+        <div class="p-art" id="p-art" data-i18n-title="player.expand"></div>
+        <div class="p-meta" id="p-meta">
+          <div class="p-title" id="p-title" data-i18n="player.nothing">Nada en reproducción</div>
+          <div class="p-artist" id="p-artist"></div>
+        </div>
+        <button class="ctl fav-btn" id="p-fav" data-i18n-aria="player.fav"><svg class="icon"><use href="#i-heart"/></svg></button>
+      </div>
+
+      <div class="p-center">
+        <div class="p-buttons">
+          <button class="ctl" id="btn-shuffle" data-i18n-aria="player.shuffle" data-i18n-title="player.shuffle"><svg class="icon"><use href="#i-shuffle"/></svg></button>
+          <!-- Saltos largos: solo aparecen en pistas largas (capítulos, mezclas) -->
+          <button class="ctl long-only" id="btn-back15" data-i18n-aria="player.back15" data-i18n-title="player.back15"><svg class="icon"><use href="#i-back15"/></svg></button>
+          <button class="ctl" id="btn-prev" data-i18n-aria="player.prev"><svg class="icon"><use href="#i-prev"/></svg></button>
+          <button class="ctl play" id="btn-play" data-i18n-aria="player.play"><svg class="icon"><use href="#i-play"/></svg></button>
+          <button class="ctl" id="btn-next" data-i18n-aria="player.next"><svg class="icon"><use href="#i-next"/></svg></button>
+          <button class="ctl long-only" id="btn-fwd30" data-i18n-aria="player.fwd30" data-i18n-title="player.fwd30"><svg class="icon"><use href="#i-fwd30"/></svg></button>
+          <button class="ctl" id="btn-repeat" data-i18n-aria="player.repeat" data-i18n-title="player.repeat"><svg class="icon"><use href="#i-repeat"/></svg></button>
+        </div>
+        <div class="p-progress">
+          <span id="time-cur">0:00</span>
+          <input id="seek-range" type="range" min="0" max="1000" value="0" data-i18n-aria="player.progress" />
+          <span id="time-total">0:00</span>
+        </div>
+      </div>
+
+      <div class="p-right">
+        <button class="ctl" id="btn-extras" data-i18n-aria="player.extras" data-i18n-title="player.extras">
+          <svg class="icon"><use href="#i-speed"/></svg>
+          <span class="ctl-badge" id="extras-badge" hidden></span>
+        </button>
+        <button class="ctl" id="btn-expand-np" data-i18n-aria="player.expand" data-i18n-title="player.expand"><svg class="icon"><use href="#i-expand"/></svg></button>
+        <button class="ctl" id="btn-queue" data-i18n-aria="player.queue" data-i18n-title="player.queue"><svg class="icon"><use href="#i-queue"/></svg></button>
+        <button class="ctl" id="btn-vol" data-i18n-aria="player.mute"><svg class="icon"><use href="#i-vol"/></svg></button>
+        <input id="vol-range" type="range" min="0" max="100" value="100" data-i18n-aria="player.volume" />
+        <span class="vol-value" id="vol-value">100</span>
+      </div>
+    </footer>
+
+    <!-- Navegación inferior (solo móvil) -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab-btn active" data-view="songs"><svg class="icon"><use href="#i-note"/></svg><span data-i18n="nav.songs"></span></button>
+      <button class="tab-btn" data-view="albums"><svg class="icon"><use href="#i-disc"/></svg><span data-i18n="nav.albums"></span></button>
+      <button class="tab-btn" data-view="artists"><svg class="icon"><use href="#i-mic"/></svg><span data-i18n="nav.artists"></span></button>
+      <button class="tab-btn" data-view="favs"><svg class="icon"><use href="#i-heart"/></svg><span data-i18n="nav.favs"></span></button>
+      <button class="tab-btn" data-view="playlists"><svg class="icon"><use href="#i-queue"/></svg><span data-i18n="nav.playlists"></span></button>
+      <button class="tab-btn" data-view="books" hidden><svg class="icon"><use href="#i-book"/></svg><span data-i18n="nav.books"></span></button>
+    </nav>
+
+    <!-- Vista grande: reproduciendo ahora -->
+    <section id="np" class="np" data-i18n-aria="np.label">
+      <div class="np-bg" id="np-bg"></div>
+      <button class="np-close" id="np-close" data-i18n-aria="np.close"><svg class="icon"><use href="#i-chev-down"/></svg></button>
+      <div class="np-content">
+        <div class="np-art" id="np-art"></div>
+        <div class="np-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="np-title" id="np-title"></div>
+        <div class="np-artist" id="np-artist"></div>
+        <div class="np-album" id="np-album"></div>
+        <div class="np-actions">
+          <button class="btn-ghost" id="np-album-btn"><svg class="icon"><use href="#i-disc"/></svg> <span data-i18n="np.album"></span></button>
+          <button class="btn-ghost" id="np-artist-btn"><svg class="icon"><use href="#i-mic"/></svg> <span data-i18n="np.artist"></span></button>
+          <button class="btn-ghost" id="np-edit"><svg class="icon"><use href="#i-edit"/></svg> <span data-i18n="np.edit"></span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal: editor de etiquetas -->
+    <div id="edit-modal" class="modal" hidden>
+      <div class="modal-card edit-card">
+        <div class="modal-head">
+          <h2 data-i18n="editor.title">Editar canción</h2>
+          <button class="ctl" id="edit-close" data-i18n-aria="dialog.close"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+
+        <div class="edit-hero">
+          <!-- La portada es el propio botón para cambiarla -->
+          <button class="edit-cover" id="edit-pick-img" data-i18n-title="editor.changeCover">
+            <span class="edit-cover-img" id="edit-cover"></span>
+            <span class="edit-cover-overlay"><svg class="icon"><use href="#i-edit"/></svg></span>
+          </button>
+          <div class="edit-hero-info">
+            <div class="edit-file" id="edit-file"></div>
+            <p class="edit-hint" data-i18n="editor.coverHint"></p>
+            <button class="btn-ghost tiny" id="edit-remove-img" data-i18n="editor.removeCover">Quitar portada</button>
+          </div>
+        </div>
+
+        <div class="edit-grid">
+          <label class="field span-all"><span data-i18n="editor.fieldTitle"></span>
+            <span class="field-row">
+              <input id="edit-title" type="text" autocomplete="off" />
+              <button class="field-btn" id="edit-clean" type="button" data-i18n-title="editor.cleanHint">
+                <svg class="icon"><use href="#i-sparkle"/></svg>
+                <span data-i18n="editor.clean">Limpiar</span>
+              </button>
+            </span>
+          </label>
+          <label class="field"><span data-i18n="editor.fieldArtist"></span>
+            <input id="edit-artist" type="text" autocomplete="off" />
+          </label>
+          <label class="field"><span data-i18n="editor.fieldAlbum"></span>
+            <input id="edit-album" type="text" autocomplete="off" />
+          </label>
+          <label class="field"><span data-i18n="editor.fieldGenre"></span>
+            <input id="edit-genre" type="text" autocomplete="off" list="genre-list" />
+          </label>
+          <label class="field field-num"><span data-i18n="editor.fieldTrack"></span>
+            <input id="edit-track" type="number" min="1" max="999" />
+          </label>
+        </div>
+        <!-- Géneros ya presentes en la biblioteca, para no escribirlos a mano -->
+        <datalist id="genre-list"></datalist>
+
+        <div class="edit-warn" id="edit-warn">
+          <svg class="icon"><use href="#i-shield"/></svg>
+          <span id="edit-warn-text"></span>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-ghost" id="edit-cancel" data-i18n="dialog.cancel">Cancelar</button>
+          <button class="btn-primary" id="edit-save" data-i18n="editor.save">Guardar en el archivo</button>
+        </div>
+      </div>
+    </div>
+    <input id="edit-img-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+
+    <!-- Modal: edición por lotes -->
+    <div id="batch-modal" class="modal" hidden>
+      <div class="modal-card edit-card">
+        <div class="modal-head">
+          <h2 id="batch-title"></h2>
+          <button class="ctl" id="batch-close" data-i18n-aria="dialog.close"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+        <p class="dlg-note" data-i18n="batch.lead"></p>
+        <div class="edit-grid">
+          <label class="field span-all"><span data-i18n="batch.artist"></span>
+            <input id="batch-artist" type="text" autocomplete="off" />
+          </label>
+          <label class="field span-all"><span data-i18n="batch.album"></span>
+            <input id="batch-album" type="text" autocomplete="off" />
+          </label>
+          <label class="field span-all"><span data-i18n="batch.genre"></span>
+            <input id="batch-genre" type="text" autocomplete="off" list="genre-list" />
+          </label>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="batch-clean" />
+          <span>
+            <b data-i18n="batch.clean"></b>
+            <small data-i18n="batch.cleanHint"></small>
+          </span>
+        </label>
+        <div class="edit-warn blocked" id="batch-warn" hidden>
+          <svg class="icon"><use href="#i-shield"/></svg>
+          <span id="batch-warn-text"></span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-ghost" id="batch-cancel" data-i18n="dialog.cancel">Cancelar</button>
+          <button class="btn-primary" id="batch-save"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: nombre de lista -->
+    <div id="name-modal" class="modal" hidden>
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2 id="name-title">Nueva lista</h2>
+          <button class="ctl" id="name-close" data-i18n-aria="dialog.close"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+        <label class="field"><span data-i18n="name.field"></span>
+          <input id="name-input" type="text" autocomplete="off" maxlength="60" />
+        </label>
+        <div class="modal-actions">
+          <button class="btn-primary" id="name-save" data-i18n="name.save">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diálogo propio: confirmaciones y explicación de los permisos del navegador -->
+    <div id="dialog" class="modal" hidden>
+      <div class="modal-card dlg-card">
+        <div class="dlg-head">
+          <div class="dlg-icon" id="dialog-icon"></div>
+          <button class="ctl" id="dialog-close" data-i18n-aria="dialog.close"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+        <h2 class="dlg-title" id="dialog-title"></h2>
+        <div class="dlg-body" id="dialog-body"></div>
+        <div class="modal-actions">
+          <button class="btn-ghost" id="dialog-cancel">Cancelar</button>
+          <button class="btn-primary" id="dialog-confirm">Continuar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú contextual -->
+    <div id="ctx-menu" class="ctx-menu" hidden></div>
+
+    <!-- Loader de carpeta -->
+    <div id="loader" class="loader" hidden>
+      <div class="loader-card">
+        <div class="spin" aria-hidden="true"></div>
+        <div id="loader-text"></div>
+      </div>
+    </div>
+
+    <!-- Notificación flotante -->
+    <div id="toast" class="toast" role="status" hidden></div>
+
+    <script>
+      import '../scripts/app.js';
+    </script>
+  

@@ -1,0 +1,16 @@
+---
+// English page. Same app, different <head>; the interface language is decided
+// at runtime by i18n.js, which reads <html lang> when there is no saved choice.
+import '../../styles/global.css';
+import HeadMeta from '../../components/HeadMeta.astro';
+import AppShell from '../../components/AppShell.astro';
+---
+
+<html lang="en">
+  <head>
+    <HeadMeta lang="en" />
+  </head>
+  <body>
+    <AppShell />
+  </body>
+</html>

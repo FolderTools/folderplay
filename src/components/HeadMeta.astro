@@ -1,0 +1,98 @@
+---
+// Etiquetas del <head> por página e idioma.
+//
+// Cada intención de búsqueda tiene su página (`variant`): la de música y la de
+// audiolibros. Una sola página intentando posicionar para las dos rankea peor
+// para ambas. Añadir un idioma = una entrada por variante; añadir una variante
+// = un bloque en PAGES + su cáscara en src/pages/.
+const { lang, variant = 'home' } = Astro.props;
+
+const SITE = 'https://folderplay.com';
+
+const PAGES = {
+  home: {
+    es: {
+      path: '/',
+      locale: 'es_ES',
+      title: 'FolderPlay — Reproductor de música y audiolibros local',
+      // Lo importante va delante: Google recorta el fragmento sobre los 160 caracteres
+      description: 'Sin instalar nada ni crear cuenta: elige una carpeta y reproduce tu música o tus audiolibros en el navegador, con carátulas, álbumes y capítulos. Gratis.',
+      ogDescription: 'Elige una carpeta de tu equipo y reproduce tu música o tus audiolibros en el navegador. Sin instalar nada, sin cuenta y sin subir archivos.',
+      schema: 'Reproductor local en el navegador: elige una carpeta de tu equipo y reproduce tus MP3, FLAC y audiolibros, con carátulas, álbumes, listas, capítulos, velocidad de lectura y marcador de dónde lo dejaste.',
+    },
+    en: {
+      path: '/en/',
+      locale: 'en_US',
+      title: 'FolderPlay — Local music and audiobook player',
+      description: 'No install, no account: pick a folder and play your music or audiobooks in the browser, with cover art, albums and chapters. Free.',
+      ogDescription: 'Pick a folder from your computer and play your music or audiobooks in the browser. No install, no account, nothing uploaded.',
+      schema: 'Local player in your browser: pick a folder from your computer and play your MP3, FLAC and audiobooks, with cover art, albums, playlists, chapters, playback speed and resume where you left off.',
+    },
+  },
+  books: {
+    es: {
+      path: '/audiolibros/',
+      locale: 'es_ES',
+      title: 'FolderPlay — Reproductor de audiolibros en el navegador',
+      description: 'Escucha tus audiolibros sin instalar nada: elige la carpeta, reproduce por capítulos, ajusta la velocidad y sigue donde lo dejaste. Cada libro guarda su avance. Gratis.',
+      ogDescription: 'Reproductor de audiolibros que corre en el navegador: capítulos en orden, velocidad de lectura, temporizador y marcador por libro. Sin instalar nada ni subir archivos.',
+      schema: 'Reproductor de audiolibros local en el navegador: elige una carpeta con tus audiolibros (MP3, M4B) y escúchalos por capítulos, con control de velocidad, saltos de 15 y 30 segundos, temporizador de apagado y el punto donde lo dejaste guardado por libro.',
+    },
+    en: {
+      path: '/en/audiobooks/',
+      locale: 'en_US',
+      title: 'FolderPlay — Audiobook player in your browser',
+      description: 'Listen to your audiobooks with no install: pick the folder, play by chapters, adjust the speed and resume where you left off. Each book keeps its own progress. Free.',
+      ogDescription: 'An audiobook player that runs in the browser: chapters in order, playback speed, sleep timer and per-book bookmark. No install, nothing uploaded.',
+      schema: 'Local audiobook player in your browser: pick a folder with your audiobooks (MP3, M4B) and listen by chapters, with speed control, 15 and 30 second skips, a sleep timer and per-book resume where you left off.',
+    },
+  },
+};
+
+const meta = PAGES[variant][lang];
+const canonical = SITE + meta.path;
+// Las alternativas de idioma son las de esta misma variante
+const alternates = Object.entries(PAGES[variant]).map(([code, entry]) => ({ code, href: SITE + entry.path }));
+const xDefault = SITE + PAGES[variant].es.path;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'FolderPlay',
+  url: canonical,
+  description: meta.schema,
+  applicationCategory: 'MultimediaApplication',
+  operatingSystem: 'Any',
+  inLanguage: Object.keys(PAGES[variant]),
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content={meta.description} />
+<meta name="theme-color" content="#0b0b10" />
+<meta name="google-site-verification" content="GL3G5R92qU5syXoger4dUOEzUbcSZB_Fn9sqa6cpu6Y" />
+<!-- ?v=2: el favicon anterior era otro dibujo y los navegadores lo cachean aparte.
+     Google necesita además un icono sin parámetros y de 48px (o múltiplo),
+     y busca /favicon.ico por convención; por eso están los tres. -->
+<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
+<link rel="icon" href="/icon-48.png" type="image/png" sizes="48x48" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" href="/icon-32.png?v=2" type="image/png" sizes="32x32" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="apple-touch-icon" href="/icon-192.png" />
+<link rel="canonical" href={canonical} />
+{alternates.map((alt) => <link rel="alternate" hreflang={alt.code} href={alt.href} />)}
+<link rel="alternate" hreflang="x-default" href={xDefault} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={meta.title} />
+<meta property="og:description" content={meta.ogDescription} />
+<meta property="og:image" content={SITE + '/icon-512.png'} />
+<meta property="og:locale" content={meta.locale} />
+{alternates.filter((alt) => alt.code !== lang).map((alt) => (
+  <meta property="og:locale:alternate" content={PAGES[variant][alt.code].locale} />
+))}
+<meta name="twitter:card" content="summary" />
+<script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
+<title>{meta.title}</title>
