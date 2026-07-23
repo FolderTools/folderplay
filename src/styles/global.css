@@ -210,8 +210,7 @@ body[data-density='compact'] .row-artist {
   color: var(--accent);
 }
 
-.brand b,
-.welcome-brand b {
+.brand b {
   color: var(--accent-2);
   font-weight: inherit;
 }
@@ -489,22 +488,6 @@ body:not(.has-library) .topbar {
   max-width: 520px;
 }
 
-.welcome-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  margin-bottom: 22px;
-}
-
-.welcome-brand .icon {
-  width: 32px;
-  height: 32px;
-  color: var(--accent);
-}
-
 .welcome h1 {
   font-size: clamp(34px, 4.6vw, 52px);
   line-height: 1.05;
@@ -552,30 +535,14 @@ body:not(.has-library) .topbar {
   margin-top: 14px;
 }
 
-.welcome-feats {
+/* Pie de la bienvenida: "Ver cómo funciona" y el enlace al repositorio, en una
+   fila que refuerza la confianza (puedes verificar el código). */
+.welcome-foot {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 22px;
-}
-
-.feat-chip {
-  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-dim);
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 13px;
-}
-
-.feat-chip .icon {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-2);
+  gap: 4px 16px;
+  margin-top: 26px;
 }
 
 .privacy {
@@ -584,13 +551,21 @@ body:not(.has-library) .topbar {
   gap: 8px;
   color: var(--text-faint);
   font-size: 13px;
-  margin-top: 24px;
   line-height: 1.5;
   text-align: left;
   padding: 8px 12px;
   margin-left: -12px;
   border-radius: 10px;
   transition: background 0.15s, color 0.15s;
+}
+
+/* El enlace al repo comparte estilo con .privacy pero no sangra a la izquierda */
+.repo-link {
+  margin-left: 0;
+}
+
+.repo-link .icon {
+  color: var(--text-dim);
 }
 
 .privacy b {
@@ -3692,11 +3667,9 @@ body[data-skin='neon'] #vol-range {
     padding: 20px 16px 40px;
   }
 
-  .welcome-brand,
   .welcome-actions,
   .welcome-badges,
-  .welcome-feats,
-  .privacy {
+  .welcome-foot {
     justify-content: center;
   }
 
@@ -3727,10 +3700,6 @@ body[data-skin='neon'] #vol-range {
 /* En pantallas muy bajas o estrechas la maqueta estorba más que aporta */
 @media (max-width: 640px) {
   .welcome-mock {
-    display: none;
-  }
-
-  .welcome-feats {
     display: none;
   }
 }
