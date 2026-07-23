@@ -399,6 +399,10 @@ export const es = {
     addedTo: 'Añadida a “{name}”',
     alreadyIn: 'Ya estaba en “{name}”',
     noAccess: 'El navegador no dio acceso a la carpeta.',
+    loadFailed: 'No se pudo leer la carpeta. Puede que se haya movido o perdido el acceso. Vuelve a elegirla.',
+    playFailed: 'No se pudo reproducir «{name}»',
+    playStopped: 'Reproducción detenida: varios archivos no se pudieron leer. ¿Se movió la carpeta o se cerró el permiso?',
+    oops: 'Algo salió mal. Si se repite, recarga la página.',
   },
 
   unknown: {

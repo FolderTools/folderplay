@@ -398,6 +398,10 @@ export const en = {
     addedTo: 'Added to “{name}”',
     alreadyIn: 'Already in “{name}”',
     noAccess: 'The browser did not grant access to the folder.',
+    loadFailed: 'Couldn’t read the folder. It may have moved or lost access. Pick it again.',
+    playFailed: 'Couldn’t play “{name}”',
+    playStopped: 'Playback stopped: several files couldn’t be read. Did the folder move or lose permission?',
+    oops: 'Something went wrong. Reload the page if it keeps happening.',
   },
 
   unknown: {
