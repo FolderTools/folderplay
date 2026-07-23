@@ -11,9 +11,10 @@
 // Este módulo no importa app.js: lo que necesita de la app llega en el
 // contexto de initSettings (changeLang, onChange…).
 
-import { esc } from './utils.js';
+import { esc, ICON } from './utils.js';
 import { getPref, setPref } from './prefs.js';
 import { t, LANGS, getLang } from './i18n.js';
+import { toggleMenuAt } from './ui.js';
 
 /** @type {{changeLang?: Function, onChange?: Function, action?: Function}} */
 let ctx = {};
@@ -222,10 +223,11 @@ function controlHtml(setting, index, value, label) {
               role="switch" aria-checked="${value === '1'}" aria-label="${label}"><i></i></button>`;
   }
   if (setting.type === 'select') {
-    return `<select class="set-select" data-i="${index}" aria-label="${label}">
-        ${setting.options().map((option) => `
-          <option value="${esc(option.value)}" ${option.value === value ? 'selected' : ''}>${esc(option.label)}</option>`).join('')}
-      </select>`;
+    // Botón + menú propio en vez de <select> nativo: el desplegable del sistema
+    // no se puede tematizar y desentonaba (igual que en ordenar y en idioma).
+    const current = setting.options().find((option) => option.value === value);
+    return `<button class="set-select" data-i="${index}" aria-label="${label}">
+        <span>${esc(current ? current.label : value)}</span>${ICON('chev-down')}</button>`;
   }
   if (setting.type === 'action') {
     return `<button class="btn-ghost tiny ${setting.danger ? 'danger' : ''}" data-i="${index}">${esc(t(`settings.${setting.key}Btn`))}</button>`;
@@ -289,7 +291,14 @@ export function renderSettings() {
     if (setting.type === 'toggle') {
       el.addEventListener('click', () => change(setting, getSetting(setting.key) === '1' ? '0' : '1'));
     } else if (setting.type === 'select') {
-      el.addEventListener('change', (e) => change(setting, e.target.value));
+      el.addEventListener('click', () => {
+        const value = getSetting(setting.key);
+        toggleMenuAt(el, setting.options().map((option) => ({
+          icon: option.value === value ? 'check' : '',
+          label: option.label,
+          fn: () => change(setting, option.value),
+        })), { above: false });
+      });
     } else if (setting.type === 'cards') {
       el.addEventListener('click', () => change(setting, el.dataset.value));
     } else if (setting.type === 'action') {

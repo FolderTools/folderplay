@@ -129,6 +129,7 @@ export const es = {
 
   np: {
     label: 'Reproduciendo ahora',
+    fav: 'Favorito',
     album: 'Ver álbum',
     artist: 'Ver artista',
     edit: 'Editar etiquetas',
@@ -183,6 +184,8 @@ export const es = {
   },
 
   menu: {
+    fav: 'Añadir a favoritos',
+    unfav: 'Quitar de favoritos',
     addQueue: 'Añadir a la cola',
     playNext: 'Reproducir a continuación',
     viewAlbum: 'Ver álbum',
@@ -262,6 +265,7 @@ export const es = {
     rewindOnResumeHint: 'Al continuar un capítulo, vuelve unos segundos atrás para recuperar el hilo.',
     rewindNone: 'No retroceder',
     lang: 'Idioma',
+    langHint: 'La interfaz cambia al momento, sin recargar la página.',
     theme: 'Tema',
     themeDark: 'Oscuro',
     themeLight: 'Claro',

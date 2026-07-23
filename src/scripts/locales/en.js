@@ -128,6 +128,7 @@ export const en = {
 
   np: {
     label: 'Now playing',
+    fav: 'Favorite',
     album: 'Go to album',
     artist: 'Go to artist',
     edit: 'Edit tags',
@@ -182,6 +183,8 @@ export const en = {
   },
 
   menu: {
+    fav: 'Add to favorites',
+    unfav: 'Remove from favorites',
     addQueue: 'Add to queue',
     playNext: 'Play next',
     viewAlbum: 'Go to album',
@@ -261,6 +264,7 @@ export const en = {
     rewindOnResumeHint: 'When you continue a chapter, go back a few seconds to pick up the thread.',
     rewindNone: 'No rewind',
     lang: 'Language',
+    langHint: 'The interface changes instantly, without reloading the page.',
     theme: 'Theme',
     themeDark: 'Dark',
     themeLight: 'Light',
