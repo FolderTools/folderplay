@@ -1012,13 +1012,14 @@ body:not(.has-library) .topbar {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.12s;
-  /* Con miles de canciones, el coste no es construir el HTML sino maquetar y
-     pintar todas las filas. content-visibility deja que el navegador se salte
-     las que están fuera de pantalla; contain-intrinsic-size le da el alto
-     estimado para que la barra de scroll no dé saltos. */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 44px;
 }
+/* Nota: aquí estuvo `content-visibility: auto` para abaratar la primera pintura
+   de listas largas, pero se quitó. El canvas del reproductor dibuja por el hilo
+   principal en cada frame, y eso obliga al navegador a re-evaluar la relevancia
+   de las miles de filas contenidas en cada frame → el efecto caía a ~10 fps solo
+   en Canciones. Los tirones al marcar o seleccionar ya los evitan las
+   actualizaciones quirúrgicas (paintFav, syncSelectionUI), que era el problema
+   real; esto solo ayudaba a la primera pintura y no compensaba. */
 
 .track-row:hover {
   background: var(--bg-hover);
@@ -1664,6 +1665,10 @@ body.playing .art-eq {
 
 .art-eq i {
   width: 2.5px;
+  /* Altura explícita: `@keyframes eq` ahora anima scaleY, no la altura, así que
+     sin esto los barritas medirían 0 y no se verían. */
+  height: 100%;
+  transform-origin: bottom;
   background: var(--accent-2);
   border-radius: 1px;
   animation: eq 0.9s ease-in-out infinite;
@@ -2008,6 +2013,9 @@ body.playing .np-eq {
 
 .np-eq i {
   width: 4px;
+  /* Igual que .art-eq: `eq` anima scaleY, hace falta altura base */
+  height: 100%;
+  transform-origin: bottom;
   background: var(--accent-2);
   border-radius: 2px;
   animation: eq 0.9s ease-in-out infinite;

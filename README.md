@@ -27,7 +27,7 @@ uses, y sin confiar tus archivos a nadie.
 ## Por qué es distinto
 
 - **Privado de verdad.** La app es una página estática. Usa la
-  [File System Access API](https://developer.mozilla.org/docs/Web/API/File_System_Access_API)
+  [File System API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API)
   para leer tu carpeta; los archivos nunca se copian ni se envían a ningún sitio.
   Puedes comprobarlo en el código, o desconectar la red y ver que sigue sonando.
 - **Cero fricción.** Ni instalación, ni registro, ni configuración. Entras,
@@ -88,6 +88,10 @@ carpeta, editar y borrar); Firefox y Safari reproducen con el selector clásico.
 
 - **`prod`** — lo que está publicado en folderplay.com.
 - **`develop`** — trabajo en curso.
+
+## Licencia
+
+[MIT](./LICENSE) — úsalo, cámbialo y compártelo; solo conserva el aviso de copyright.
 
 ---
 
