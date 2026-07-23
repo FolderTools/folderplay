@@ -40,6 +40,9 @@ import {
 
 let currentUrl = null;
 let seeking = false;
+let playFailStreak = 0;   // pistas seguidas que no se pudieron reproducir
+let lastCrashToast = 0;   // último aviso de la red de seguridad (para no repetir)
+const MAX_PLAY_FAILS = 3; // a partir de aquí no es un archivo suelto: se perdió el acceso
 
 // ---------- Carga de carpeta (solo referencias, nunca se copian archivos) ----------
 
@@ -101,8 +104,17 @@ async function removeFolder() {
 
 async function loadFromHandle(handle) {
   state.dirHandle = handle;
-  const { files, art } = await scanDirectory(handle);
-  await ingest(files, handle.name, art);
+  try {
+    const { files, art } = await scanDirectory(handle);
+    await ingest(files, handle.name, art);
+  } catch (e) {
+    // La carpeta ya no está donde estaba, o se perdió el acceso a mitad de la
+    // lectura (handle obsoleto). Cerrar el velo de carga —si no, se queda
+    // colgado— y avisar claro. Cubre reabrir, elegir y arrastrar por igual.
+    console.error(e);
+    hideLoader();
+    showToast(t('toast.loadFailed'), 5000);
+  }
 }
 
 function loadFromFileList(fileList) {
@@ -2454,8 +2466,25 @@ function bindQueueDrag(row, offset) {
 
 // ---------- Eventos ----------
 
+// Red de seguridad: un error no capturado en cualquier parte no debe dejar la
+// interfaz congelada y muda. Se avisa (como mucho una vez cada 8 s, para no
+// saturar si algo falla en cada frame) y el detalle queda en consola.
+function reportCrash(err) {
+  console.error(err);
+  const now = Date.now();
+  if (now - lastCrashToast < 8000) return;
+  lastCrashToast = now;
+  showToast(t('toast.oops'), 5000);
+}
+
 function bindEvents() {
   bindDialog();
+
+  // Errores de JS no capturados y promesas rechazadas sin catch. Los fallos de
+  // recursos (una carátula que no carga) no traen `error` y se ignoran a
+  // propósito: no son un fallo de la app.
+  window.addEventListener('error', (e) => { if (e.error) reportCrash(e.error); });
+  window.addEventListener('unhandledrejection', (e) => reportCrash(e.reason));
 
   $$('.nav-btn, .tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => goToView(btn.dataset.view));
@@ -2667,7 +2696,34 @@ function bindEvents() {
     next(true);
   });
   audio.addEventListener('error', () => {
-    if (state.currentId != null && state.queue.length > 1) next(true);
+    // Solo cuenta un fallo de medio real: soltar el archivo para editar o borrar
+    // (removeAttribute + load) no deja `audio.error`, así que ese caso no entra.
+    if (!audio.error || state.currentId == null) return;
+    const track = trackById(state.currentId);
+    playFailStreak++;
+    // Varias seguidas no es un archivo suelto corrupto: es que se perdió el
+    // acceso (carpeta movida o permiso cerrado). Parar y avisar en vez de
+    // recorrer toda la biblioteca lanzando errores (o repetir la rota en bucle).
+    if (playFailStreak >= MAX_PLAY_FAILS) {
+      playFailStreak = 0;
+      stopPlayback();
+      renderPlayerBar();
+      showToast(t('toast.playStopped'), 6000);
+      return;
+    }
+    showToast(t('toast.playFailed', { name: track ? track.title : '' }), 4000);
+    // Salta a otra pista distinta; nunca reintenta la rota, por eso no pasa por
+    // next() (que con repeat 'one' la volvería a poner).
+    if (state.qPos + 1 < state.queue.length) {
+      state.qPos++;
+      playCurrent();
+    } else if (state.repeat === 'all' && state.queue.length > 1) {
+      state.qPos = 0;
+      playCurrent();
+    } else {
+      stopPlayback();
+      renderPlayerBar();
+    }
   });
   audio.addEventListener('timeupdate', () => {
     if (seeking || !audio.duration) return;
@@ -2687,6 +2743,7 @@ function bindEvents() {
     $('#time-total').textContent = fmtTime(audio.duration);
   });
   audio.addEventListener('loadedmetadata', () => {
+    playFailStreak = 0; // el archivo se pudo leer: la racha de fallos se corta
     const track = state.currentId != null ? trackById(state.currentId) : null;
     if (track && isFinite(audio.duration)) track.duration = audio.duration;
     $('#time-total').textContent = fmtTime(audio.duration);

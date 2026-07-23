@@ -177,6 +177,26 @@ llega al final sin lanzar.
   escaneo las duraciones son `null`, así que los libros solo detectados aún no
   cuentan). `normalizeView()`, al principio de `render()`, cae a Canciones si el
   libro del detalle ya no existe o si la vista Libros se quedó sin libros.
+- **Un fallo al reproducir no puede ser mudo ni entrar en bucle.** El handler de
+  `audio.error` avisa (`toast.playFailed`) y salta a otra pista, pero **nunca por
+  `next()`**: con `repeat 'one'` reintentaría la rota para siempre. Cuenta los
+  fallos seguidos (`playFailStreak`); a los `MAX_PLAY_FAILS` sin que ninguno
+  cargue no es un archivo suelto corrupto sino acceso perdido (carpeta movida o
+  permiso cerrado), así que para y avisa (`toast.playStopped`) en vez de recorrer
+  toda la biblioteca lanzando errores. Se repone en `loadedmetadata` (archivo
+  legible). El guard `if (!audio.error …)` es clave: soltar el archivo para
+  editar/borrar (`removeAttribute`+`load`) no deja `audio.error`, así que ese
+  caso no dispara un salto de pista.
+- **Un fallo leyendo la carpeta debe cerrar el velo de carga.** `scanDirectory`
+  abre el loader; si `getFile()` peta a mitad (handle obsoleto: carpeta movida o
+  borrada) el velo se queda colgado y la app parece congelada. `loadFromHandle`
+  lo envuelve en try/catch (hideLoader + `toast.loadFailed`), y por eso cubre los
+  tres caminos a la vez: elegir, reabrir y arrastrar.
+- **Red de seguridad global.** `window` escucha `error` y `unhandledrejection`
+  (en `bindEvents`) → aviso no-fatal `toast.oops` en vez de congelarse en
+  silencio. Va throttled a 8 s para no saturar si algo falla en cada frame, y
+  solo actúa ante fallos reales de JS (`e.error`): los de recursos (una carátula
+  que no carga) no traen `error` y se ignoran a propósito.
 
 ## Decisiones clave
 
