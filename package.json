@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "node scripts/check.mjs",
-    "deploy": "node scripts/check.mjs && astro build && node scripts/smoke.mjs && wrangler pages deploy dist --project-name=miusic",
+    "deploy": "node scripts/check.mjs && astro build && node scripts/smoke.mjs && wrangler pages deploy dist --project-name=miusic --branch=main",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
