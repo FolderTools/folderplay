@@ -24,6 +24,20 @@ cada documento indica cuándo hace falta:
 Si vas a modificar algo y no sabes por qué está así, está en `03-decisiones.md`.
 Si algo se rompe de forma silenciosa, está en `02-trampas.md`.
 
+## Node: el cambio es automático
+
+Astro 7 exige **Node ≥ 22.12**, y el del sistema en esta máquina es 22.11.0 y
+**no se toca** (otros proyectos dependen de él). El proyecto fija **22.23.1** en
+`.node-version`, y fnm lo cambia solo al entrar en la carpeta.
+
+En un shell **no interactivo** (scripts, CI, agentes) el hook no se carga y hay
+que activarlo a mano, o el build falla:
+
+```powershell
+fnm env --use-on-cd | Out-String | Invoke-Expression
+fnm use 22.23.1
+```
+
 ## Comandos
 
 ```bash

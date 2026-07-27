@@ -5,7 +5,9 @@
 // Al cambiar el nombre se descartan las cachés anteriores en 'activate'.
 // v3: reparto de app.js en módulos (assets nuevos) y páginas cacheadas por
 // idioma. Los assets viejos quedaban huérfanos ocupando sitio para siempre.
-const CACHE = 'folderplay-v3';
+// v4: Astro 7 rehace los hashes y renombra el chunk de CSS (index.* → AppShell.*),
+// así que toda la caché v3 queda huérfana.
+const CACHE = 'folderplay-v4';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
