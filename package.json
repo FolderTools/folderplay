@@ -12,7 +12,7 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
-    "astro": "^5.12.0"
+    "astro": "^7.1.3"
   },
   "devDependencies": {
     "acorn": "^8.17.0",

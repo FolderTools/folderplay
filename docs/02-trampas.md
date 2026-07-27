@@ -41,6 +41,17 @@ en blanco. Léelo antes de tocar el área correspondiente.
   `clientX/Y` y el ancla al abrir el menú, porque en el `fn` diferido
   `e.currentTarget` ya es `null`.
 
+## Build
+
+- **`compressHTML: true` está fijado a mano en `astro.config.mjs`.** Astro 7
+  cambió el valor por defecto a `'jsx'`, que borra el espacio entre etiquetas
+  hermanas. Aquí no es cosmético: el titular pasaba de "…local 15 30 FolderPlay"
+  a "…local1530FolderPlay", y en la comparación del HTML generado había 122
+  pares de elementos inline afectados (`button|button`, `span|span`, `span|b`,
+  `input|label`…). Todo el marcado vive en un solo `AppShell.astro`, así que el
+  riesgo está por todas partes. Si algún día lo quitas, compara el texto
+  renderizado antes y después, no solo que el build pase.
+
 ## CSS y layout
 
 - **Flexbox en columna**: `.content` necesita `min-height: 0`. En móvil `.layout`
